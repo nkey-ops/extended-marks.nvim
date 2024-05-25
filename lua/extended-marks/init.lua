@@ -1,1 +1,1 @@
-require("extended-marks.extended-marks")
+require("extended-marks.config")

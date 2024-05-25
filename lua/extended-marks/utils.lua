@@ -186,5 +186,18 @@ function M.get_last_mark_key(max_key_seq, mark_keys, first_char)
     end
     return mark_key
 end
+
+function M.copy_keys(table)
+    assert(table ~= nil and type(table) == "table")
+
+    local keys = {}
+    local i = 1
+    for key, _ in pairs(table) do
+        keys[i] = key
+        i = i + 1
+    end
+
+    return keys
+end
 return M
 
