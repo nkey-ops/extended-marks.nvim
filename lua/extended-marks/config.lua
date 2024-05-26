@@ -6,8 +6,7 @@ vim.keymap.set({ 'n' }, 'm', function()
     local ch = vim.fn.getchar()
 
     if (ch >= 97 and ch <= 122) then --[a-z]
-        vim.api.nvim_feedkeys("m" .. string.char(ch), "n", false)
-        -- M.set_local_mark(ch)
+        local_marks.set_local_mark(ch)
         return
     elseif ch >= 65 and ch <= 90 then --[A-Z]
         global_marks.set_global_mark(ch)
@@ -21,8 +20,7 @@ vim.keymap.set({ 'n' }, '`', function()
     local ch = vim.fn.getchar()
 
     if (ch >= 97 and ch <= 122) then --[a-z]
-        vim.api.nvim_feedkeys("`" .. string.char(ch), "n", false)
-        -- M.jump_to_local_mark(ch)
+        local_marks.jump_to_local_mark(ch)
         return
     elseif ch >= 65 and ch <= 90 then --[A-Z]
         global_marks.open_global_mark(ch)
@@ -37,7 +35,7 @@ end)
 local marks_global_delete_completion = function(arg_lead, cmd_line, cursor_pos)
     local working_dir = vim.fn.getcwd()
     local marks =
-        utils.get_json_decode_data(global_marks.opts.global_marks_file_path)
+        utils.get_json_decoded_data(global_marks.opts.global_marks_file_path)
 
     table.sort(marks[working_dir])
 
@@ -80,7 +78,9 @@ vim.api.nvim_create_user_command("MarksMaxGlobalKeySeq",
 
 local marks_local_delete_completion = function(arg_lead, cmd_line, cursor_pos)
     local current_buffer = vim.api.nvim_buf_get_name(0)
-    local marks = utils.get_json_decode_data(M.opts.local_marks_file_path, current_buffer)
+    local marks =
+        utils.get_json_decoded_data(
+            local_marks.opts.local_marks_file_path, current_buffer)
 
     table.sort(marks[current_buffer])
 

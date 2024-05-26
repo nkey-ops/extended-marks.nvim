@@ -29,7 +29,7 @@ function M.get_data_file(file_path)
 end
 
 -- @working_dir optional
-function M.get_json_decode_data(file_path, working_dir)
+function M.get_json_decoded_data(file_path, working_dir)
     assert(file_path ~= nil, "File path cannot be nil")
     assert(type(file_path) == "string", "File path should be of a type string")
     assert(string.match(file_path, '%.json$'), "File should of type .json")

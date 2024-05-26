@@ -1,10 +1,3 @@
--- TODO max key seq set is lower by one
--- TODO The mark's location moves to the bottom of the file after formatting
--- TODO marks are'nt saved after closing the buffer
--- TODO highlight after the jump?
--- TODO set local hard cup max key seq
--- TODO add data dir creation logic
--- TODO remove empty tables
 local utils = require('extended-marks.utils')
 
 local M = { opts = {} }
@@ -19,7 +12,7 @@ M.set_global_mark = function(first_char)
 
     local working_dir = vim.fn.getcwd()
     local marked_file = vim.api.nvim_buf_get_name(0)
-    local data = utils.get_json_decode_data(M.opts.global_marks_file_path, working_dir)
+    local data = utils.get_json_decoded_data(M.opts.global_marks_file_path, working_dir)
 
     data[working_dir][mark_key] = marked_file
 
@@ -33,7 +26,7 @@ M.open_global_mark = function(first_char)
     assert(first_char >= 65 and first_char <= 90, "First mark key character value should be [A-Z]")
 
     local working_dir = vim.fn.getcwd()
-    local marks = utils.get_json_decode_data(M.opts.global_marks_file_path, working_dir)
+    local marks = utils.get_json_decoded_data(M.opts.global_marks_file_path, working_dir)
 
     local mark_key =
         utils.get_last_mark_key(
@@ -55,7 +48,7 @@ end
 
 function M.show_global_marks()
     local working_dir = vim.fn.getcwd()
-    local marks = utils.get_json_decode_data(
+    local marks = utils.get_json_decoded_data(
         M.opts.global_marks_file_path, working_dir)[working_dir]
 
     table.sort(marks)
@@ -64,7 +57,7 @@ function M.show_global_marks()
 end
 
 function M.show_all_global_marks()
-    local marks = utils.get_json_decode_data(M.opts.global_marks_file_path)
+    local marks = utils.get_json_decoded_data(M.opts.global_marks_file_path)
     table.sort(marks)
 
     vim.api.nvim_echo({ { vim.inspect(marks) } },
@@ -76,7 +69,7 @@ function M.delete_global_mark(mark_key)
     assert(string.len(mark_key) < 10, "mark_key is too long")
 
     local working_dir = vim.fn.getcwd()
-    local data = utils.get_json_decode_data(M.opts.global_marks_file_path)
+    local data = utils.get_json_decoded_data(M.opts.global_marks_file_path)
 
     if data[working_dir] == nil then
         data[working_dir] = {}
