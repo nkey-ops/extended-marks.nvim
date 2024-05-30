@@ -1,11 +1,12 @@
 local utils = require('extended-marks.utils')
 
 local M = { opts = {} }
+
 --[[
     local_marks file structure
     "buffer path i.e file path": {  -- TODO it's an object for some reason should be an array
-        "mark with then form [a-z]{1,max_key_seq}":  [ -- TODO it's an array for some reason should be an objer
-            number: id of the mark in the namespace,
+        "mark_key with form [a-z]{1,max_key_seq}":  [ -- TODO it's an array for some reason should be an object
+        number: id of the mark in the namespace,
             number: line number (zero based, api-indexing),
             number: column number (zero based, api-indexing)
         ]
@@ -14,7 +15,7 @@ local M = { opts = {} }
 
 M.opts.data_dir = vim.fn.glob("~/.local/share/nvim") .. "/extended-marks_v2"
 M.opts.local_marks_file_path = M.opts.data_dir .. "/local_marks.json"
-M.opts.local_marks_name_space = vim.api.nvim_create_namespace("local_marks")
+M.opts.local_marks_namespace = vim.api.nvim_create_namespace("local_marks")
 M.opts.max_key_seq = 1
 
 -- @start_char
@@ -27,8 +28,8 @@ M.set_local_mark = function(first_char)
     local mark_key = utils.get_mark_key(M.opts.max_key_seq, first_char)
     if (mark_key == nil) then return end
 
-    local local_buffer_name = vim.api.nvim_buf_get_name(0)
-    local local_buffer_id = vim.api.nvim_get_current_buf()
+    local current_buffer_id = vim.api.nvim_get_current_buf()
+    local local_buffer_name = vim.api.nvim_buf_get_name(current_buffer_id)
     local buffers =
         utils.get_json_decoded_data(M.opts.local_marks_file_path, local_buffer_name)
 
@@ -44,13 +45,13 @@ M.set_local_mark = function(first_char)
     local pos = vim.api.nvim_win_get_cursor(0)
     pos[1] = pos[1] - 1 -- zero-based api-indexing
     local marked_line_string = vim.api.nvim_buf_get_lines(
-        local_buffer_id, pos[1], pos[1] + 1, true)[1]
+        current_buffer_id, pos[1], pos[1] + 1, true)[1]
 
     extmark_opts.end_col = string.len(marked_line_string)
 
     -- place mark at the beginning of the line
     local mark_id = vim.api.nvim_buf_set_extmark(
-        local_buffer_id, M.opts.local_marks_name_space, pos[1], 0,
+        current_buffer_id, M.opts.local_marks_namespace, pos[1], 0,
         extmark_opts)
 
     buffers[local_buffer_name][mark_key] = { mark_id, pos[1], 0 }
@@ -76,12 +77,12 @@ M.jump_to_local_mark = function(first_char)
         utils.get_last_mark_key(M.opts.max_key_seq,
             utils.copy_keys(local_marks), first_char)
 
-    -- the remaining mark-key wasn't found(it was mistyped apparently) just ignore the jump
+    -- the remaining mark_key wasn't found(it was mistyped apparently) just ignore the jump
     if mark_key == nil then return end
     local mark_id = local_marks[mark_key][1]
 
     local position = vim.api.nvim_buf_get_extmark_by_id(
-        0, M.opts.local_marks_name_space, mark_id, {})
+        0, M.opts.local_marks_namespace, mark_id, {})
 
     position[1] = position[1] + 1; -- api`s line and column position is (1,0) based
     vim.api.nvim_win_set_cursor(0, position)
@@ -90,21 +91,22 @@ end
 
 function M.show_local_marks()
     local local_buffer_name = vim.api.nvim_buf_get_name(0)
-    local local_buffer_id = vim.api.nvim_get_current_buf()
+    local current_buffer_id = vim.api.nvim_get_current_buf()
     local marks = utils.get_json_decoded_data(
         M.opts.local_marks_file_path, local_buffer_name)[local_buffer_name]
+
 
     table.sort(marks)
     for mark_key, mark in pairs(marks) do
         local pair =
             vim.api.nvim_buf_get_extmark_by_id(
-                local_buffer_id, M.opts.local_marks_name_space, mark[1], {})
+                current_buffer_id, M.opts.local_marks_namespace, mark[1], {})
 
         assert(pair ~= nil and pair[1] ~= nil)
 
         marks[mark_key] =
             vim.api.nvim_buf_get_lines(
-                local_buffer_id, pair[1], pair[1] + 1, true)[1]
+                current_buffer_id, pair[1], pair[1] + 1, true)[1]
     end
 
     vim.api.nvim_echo({ { vim.inspect(marks) } },
@@ -133,16 +135,16 @@ function M.delete_local_mark(mark_key)
 
     local mark = marks[current_buffer_name][mark_key]
     if (mark == nil) then
-        print("Marks:[" .. mark_key .. "] wasn't found")
+        print(string.format("Marks:[%s] wasn't found", mark_key))
         return
     end
 
-    vim.api.nvim_buf_del_extmark(0, M.opts.local_marks_name_space, mark[1])
+    vim.api.nvim_buf_del_extmark(0, M.opts.local_marks_namespace, mark[1])
     marks[current_buffer_name][mark_key] = nil
 
     utils.write_marks(M.opts.local_marks_file_path, marks)
 
-    print("Marks:[" .. mark_key .. "] was removed")
+    print(string.format("Marks:[%s:%s] was removed", mark_key, mark[2]))
 end
 
 function M.set_max_seq_local_mark(max_seq)
@@ -157,69 +159,82 @@ function M.set_max_seq_local_mark(max_seq)
     M.opts.max_key_seq = max_seq
 end
 
+-- Updates marks from the namespace to the data file
 function M.update_local_marks()
-    local lcal_buffer_id = vim.api.nvim_get_current_buf()
-    local local_buffer_name = vim.api.nvim_buf_get_name(local_buffer_id)
-    local marks = utils.get_json_decoded_data(
+    local current_buffer_id = vim.api.nvim_get_current_buf()
+    local local_buffer_name = vim.api.nvim_buf_get_name(current_buffer_id)
+    local local_marks       = utils.get_json_decoded_data(
         M.opts.local_marks_file_path, local_buffer_name)
 
-    for mark_key, mark in pairs(marks[local_buffer_name]) do
+    for mark_key, mark in pairs(local_marks[local_buffer_name]) do
         local pair =
             vim.api.nvim_buf_get_extmark_by_id(
-                local_buffer_id, M.opts.local_marks_name_space, mark[1], {})
+                current_buffer_id, M.opts.local_marks_namespace, mark[1], {})
 
         assert(pair ~= nil and pair[1] ~= nil and pair[2] ~= nil)
 
-        marks[local_buffer_name][mark_key] = { mark[1], pair[1], pair[2] }
+        local_marks[local_buffer_name][mark_key] = { mark[1], pair[1], pair[2] }
     end
 
-    utils.write_marks(M.opts.local_marks_file_path, marks)
+    utils.write_marks(M.opts.local_marks_file_path, local_marks)
 end
 
+-- Local marks from the data file: local_marks.json into the namespace
+--
 -- TIME Coplexity: O(N+M)
 -- where N is then number of source marks and
--- M is the number of parks that a present in the buffer's name space
+-- M is the number of marks present in the namespace
 function M.restore_local_marks()
     local current_buffer_id = vim.api.nvim_get_current_buf()
-    local current_buffer_name = vim.api.nvim_buf_get_name(current_buffer_id)
+    local local_buffer_name = vim.api.nvim_buf_get_name(current_buffer_id)
     local local_marks = utils.get_json_decoded_data(
-        M.opts.local_marks_file_path, current_buffer_name)[current_buffer_name]
-    local name_space_marks =
+        M.opts.local_marks_file_path, local_buffer_name)[local_buffer_name]
+    local namespace_marks =
         vim.api.nvim_buf_get_extmarks(
-            current_buffer_id, M.opts.local_marks_name_space, 0, -1, {})
+            current_buffer_id, M.opts.local_marks_namespace, 0, -1, {})
     local max_lines = vim.api.nvim_buf_line_count(current_buffer_id)
 
-    for mark_key, mark in pairs(local_marks) do
+    for s_mark_key, s_mark in pairs(local_marks) do
         local was_found = false
 
         --TODO assert that n_space mark doesn't contain marks
         --that aren't present in the source
         -- reseting the mark that has a position that is out of bounds
-        for n_key, n_mark in pairs(name_space_marks) do
-            if mark[1] == n_mark[1] then -- found the mark
-                was_found = true
-                name_space_marks[n_key] = nil
-                if n_mark[2] == max_lines then -- then mark is out of the bounds
-                    --TODO what if mark[1] id isn't in asceeding order and overlaps with
-                    --a newly created one
-                    vim.api.nvim_buf_set_extmark(current_buffer_id,
-                        M.opts.local_marks_name_space, mark[2], mark[3], {
-                            id = mark[1],
-                            sign_text = string.sub(mark_key, 1, 2)
-                        })
-                    break
+        for n_key, n_mark in pairs(namespace_marks) do
+            if s_mark[1] == n_mark[1] then
+                if n_mark[2] ~= max_lines then
+                    -- if mark ids are equal and n_mark isn't out of bounds
+                    was_found = true
                 end
+
+                namespace_marks[n_key] = nil
+                break
             end
         end
 
-        -- adding a new mark
+        -- adding mark from the data file if it wasn't found in the namespace
         if not was_found then
             vim.api.nvim_buf_set_extmark(current_buffer_id,
-                M.opts.local_marks_name_space, mark[2], mark[3],
-                { id = mark[1], sign_text = string.sub(mark_key, 1, 2)
+                M.opts.local_marks_namespace, s_mark[2], s_mark[3],
+                { id = s_mark[1], sign_text = string.sub(s_mark_key, 1, 2)
                 })
         end
     end
+end
+
+-- temporarily added for dev
+function M.wipe()
+    local current_buffer_id = vim.api.nvim_get_current_buf()
+    local local_buffer_name = vim.api.nvim_buf_get_name(current_buffer_id)
+    local local_marks = utils.get_json_decoded_data(
+        M.opts.local_marks_file_path, local_buffer_name)
+
+    local_marks[local_buffer_name] = nil
+    utils.write_marks(M.opts.local_marks_file_path, local_marks)
+end
+
+function M.space()
+    print(vim.inspect(vim.api.nvim_buf_get_extmarks(0, M.opts.local_marks_namespace, 0, -1, {})))
 end
 
 return M

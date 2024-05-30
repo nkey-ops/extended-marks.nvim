@@ -94,6 +94,17 @@ local marks_local_delete_completion = function(arg_lead, cmd_line, cursor_pos)
     return mark_keys
 end
 
+-- temporarily added for dev
+vim.api.nvim_create_user_command("MarksLocalFreeNamespace", function()
+        local_marks.space()
+    end,
+    { desc = "Lists buffer local marks" })
+
+vim.api.nvim_create_user_command("MarksLocalDeleteAll", function()
+        local_marks.wipe()
+    end,
+    { desc = "Lists buffer local marks" })
+
 vim.api.nvim_create_user_command("MarksLocal", function()
         local_marks.show_local_marks()
     end,
@@ -118,18 +129,17 @@ vim.api.nvim_create_user_command("MarksMaxLocalKeySeq",
     })
 
 -- Autocmds
--- vim.api.nvim_create_autocmd({ "BufWrite" }, {
---     -- pattern = "*",
---     -- callback = function()
---     --     Update_local_marks()
---     -- end
--- })
+vim.api.nvim_create_autocmd({ "BufWrite" }, {
+    pattern = "*",
+    callback = function()
+        local_marks.update_local_marks()
+    end
+})
 
---TODO fix
--- vim.api.nvim_create_autocmd({ "BufNew" }, {
---     pattern = "*",
---     callback = function()
---         Restore_local_marks()
---     end
--- })
---
+-- TODO fix
+vim.api.nvim_create_autocmd({ "BufNew" }, {
+    pattern = "*",
+    callback = function()
+        local_marks.restore_local_marks()
+    end
+})
