@@ -171,10 +171,6 @@ function M.get_last_mark_key(max_key_seq, mark_keys, first_char)
 
         mark_key = mark_key .. string.char(char)
 
-        if char_counter == max_key_seq then
-            break
-        end
-
         local mark_keys_remains = M.remove_unmatched_values(mark_key, mark_keys)
         assert(mark_keys ~= nil, "Mark keys cannot be nil")
 
