@@ -2,7 +2,7 @@ local utils = require('extended-marks.utils')
 
 local M = { opts = {} }
 
-M.opts.data_dir = vim.fn.glob("~/.local/share/nvim") .. "/extended-marks_v2"
+M.opts.data_dir = vim.fn.glob("~/.local/share/nvim") .. "/extended-marks"
 M.opts.global_marks_file_path = M.opts.data_dir .. "/global_marks.json"
 M.opts.max_key_seq = 5
 
@@ -20,7 +20,7 @@ M.set_global_mark = function(first_char)
     print("Marks:[" .. mark_key .. "]", marked_file)
 end
 
-M.open_global_mark = function(first_char)
+M.jump_to_global_mark = function(first_char)
     assert(first_char ~= nil and type(first_char) == "number",
         "First mark key character value should not be nil and be of a type number")
     assert(first_char >= 65 and first_char <= 90, "First mark key character value should be [A-Z]")
@@ -40,8 +40,31 @@ M.open_global_mark = function(first_char)
         return
     end
 
-    assert(vim.fn.bufexists(marked_file))
-    vim.cmd(vim.fn.bufadd(marked_file) .. "b")
+    -- if the buffer is present, open it
+    if vim.fn.bufexists(marked_file) == 1 then
+        vim.cmd(vim.fn.bufadd(marked_file) .. "b") return
+    end
+
+    -- doesn't the file exist or is no treadable?
+    if vim.fn.filereadable(marked_file) == 0 then
+        print(string.format(
+            "Marks: file wasn't found or is not readable \"%s\"", marked_file))
+        return
+    end
+
+    -- if the file exist and is readable
+    -- 1. add the file as a buffer
+    -- 2. load the buffer
+    -- 3. set 'buflisted' option to true
+    -- 4. open the buffer
+    local buf = vim.fn.bufadd(marked_file)
+    vim.fn.bufload(buf)
+    assert(vim.api.nvim_buf_is_loaded(buf), "buf should be loaded")
+
+    vim.api.nvim_buf_set_option(buf, "buflisted", true)
+    assert(vim.fn.buflisted(buf) ~= 0, "buf should be listed")
+
+    vim.cmd(buf .. "b")
 end
 
 -- Global Functions
@@ -100,4 +123,5 @@ function M.set_max_seq_global_mark(max_seq)
 
     M.opts.max_key_seq = max_seq
 end
+
 return M

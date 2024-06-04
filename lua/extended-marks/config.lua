@@ -23,7 +23,7 @@ vim.keymap.set({ 'n' }, '`', function()
         local_marks.jump_to_local_mark(ch)
         return
     elseif ch >= 65 and ch <= 90 then --[A-Z]
-        global_marks.open_global_mark(ch)
+        global_marks.jump_to_global_mark(ch)
         return
     else
         return
