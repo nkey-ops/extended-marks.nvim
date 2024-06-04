@@ -136,8 +136,7 @@ vim.api.nvim_create_autocmd({ "BufWrite" }, {
     end
 })
 
--- TODO fix
-vim.api.nvim_create_autocmd({ "BufNew" }, {
+vim.api.nvim_create_autocmd({ "BufAdd" }, {
     pattern = "*",
     callback = function()
         local_marks.restore_local_marks()
