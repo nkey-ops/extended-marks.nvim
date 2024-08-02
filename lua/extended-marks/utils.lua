@@ -19,7 +19,7 @@ function M.get_data_file(file_path)
         --     file = io.open(file_path, "w")
         -- end
 
-        assert(file ~= nil)
+        assert(file ~= nil, "File could not be opened: " .. file_path)
 
         file:write("{}") -- creating intial JSON object
         file:close()

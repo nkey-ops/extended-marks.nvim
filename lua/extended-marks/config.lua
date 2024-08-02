@@ -1,5 +1,5 @@
-local global_marks = require('extended-marks.global-marks')
-local local_marks = require('extended-marks.local-marks')
+local global_marks = require('extended-marks.global')
+local local_marks = require('extended-marks.local')
 local utils = require('extended-marks.utils')
 
 vim.keymap.set({ 'n' }, 'm', function()
@@ -132,13 +132,13 @@ vim.api.nvim_create_user_command("MarksMaxLocalKeySeq",
 vim.api.nvim_create_autocmd({ "BufWrite" }, {
     pattern = "*",
     callback = function()
-        local_marks.update_local_marks()
+        local_marks.update()
     end
 })
 
 vim.api.nvim_create_autocmd({ "BufAdd" }, {
     pattern = "*",
     callback = function()
-        local_marks.restore_local_marks()
+        local_marks.restore()
     end
 })

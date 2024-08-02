@@ -13,7 +13,7 @@ local M = { opts = {} }
     }
 --]]
 
-M.opts.data_dir = vim.fn.glob("~/.local/share/nvim") .. "/extended-marks_v2"
+M.opts.data_dir = vim.fn.glob("~/.local/share/nvim") .. "/extended-marks"
 M.opts.local_marks_file_path = M.opts.data_dir .. "/local_marks.json"
 M.opts.local_marks_namespace = vim.api.nvim_create_namespace("local_marks")
 M.opts.max_key_seq = 1
@@ -160,7 +160,7 @@ function M.set_max_seq_local_mark(max_seq)
 end
 
 -- Updates marks from the namespace to the data file
-function M.update_local_marks()
+function M.update()
     local current_buffer_id = vim.api.nvim_get_current_buf()
     local local_buffer_name = vim.api.nvim_buf_get_name(current_buffer_id)
     local local_marks       = utils.get_json_decoded_data(
@@ -184,7 +184,7 @@ end
 -- TIME Coplexity: O(N+M)
 -- where N is then number of source marks and
 -- M is the number of marks present in the namespace
-function M.restore_local_marks()
+function M.restore()
     local current_buffer_id = vim.api.nvim_get_current_buf()
     local local_buffer_name = vim.api.nvim_buf_get_name(current_buffer_id)
     local local_marks = utils.get_json_decoded_data(
