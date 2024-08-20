@@ -42,7 +42,8 @@ M.jump_to_global_mark = function(first_char)
 
     -- if the buffer is present, open it
     if vim.fn.bufexists(marked_file) == 1 then
-        vim.cmd(vim.fn.bufadd(marked_file) .. "b") return
+        vim.cmd(vim.fn.bufadd(marked_file) .. "b")
+        return
     end
 
     -- doesn't the file exist or is no treadable?
@@ -106,6 +107,10 @@ function M.delete_global_mark(mark_key)
     end
 
     data[working_dir][mark_key] = nil
+
+    if next(data[working_dir]) == nil then
+        data[working_dir] = nil
+    end
 
     utils.write_marks(M.opts.global_marks_file_path, data)
 
