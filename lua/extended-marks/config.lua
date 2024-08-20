@@ -5,28 +5,21 @@ local utils = require('extended-marks.utils')
 vim.keymap.set({ 'n' }, 'm', function()
     local ch = vim.fn.getchar()
 
-    if (ch >= 97 and ch <= 122) then --[a-z]
+    if (ch >= 97 and ch <= 122) then  --[a-z]
         local_marks.set_local_mark(ch)
-        return
     elseif ch >= 65 and ch <= 90 then --[A-Z]
         global_marks.set_global_mark(ch)
-        return
-    else
-        return
     end
 end, {})
 
 vim.keymap.set({ 'n' }, '`', function()
     local ch = vim.fn.getchar()
 
-    if (ch >= 97 and ch <= 122) then --[a-z]
+
+    if (ch >= 97 and ch <= 122) then  --[a-z]
         local_marks.jump_to_local_mark(ch)
-        return
     elseif ch >= 65 and ch <= 90 then --[A-Z]
         global_marks.jump_to_global_mark(ch)
-        return
-    else
-        return
     end
 end)
 
@@ -136,9 +129,15 @@ vim.api.nvim_create_autocmd({ "BufWrite" }, {
     end
 })
 
-vim.api.nvim_create_autocmd({ "BufAdd" }, {
-    pattern = "*",
+vim.api.nvim_create_autocmd({ "BufNew" }, {
+    nested = true,
     callback = function()
-        local_marks.restore()
+        -- Uses nested autocmd because `vim.api.nvim_buf_line_count(args.buf)` would return zero
+        vim.api.nvim_create_autocmd({ "BufEnter" }, {
+            once = true,
+            callback = function()
+                local_marks.restore()
+            end
+        })
     end
 })
