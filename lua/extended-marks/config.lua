@@ -2,30 +2,8 @@ local global_marks = require('extended-marks.global')
 local local_marks = require('extended-marks.local')
 local utils = require('extended-marks.utils')
 
-vim.keymap.set({ 'n' }, 'm', function()
-    local ch = vim.fn.getchar()
-
-    if (ch >= 97 and ch <= 122) then  --[a-z]
-        local_marks.set_local_mark(ch)
-    elseif ch >= 65 and ch <= 90 then --[A-Z]
-        global_marks.set_global_mark(ch)
-    end
-end, {})
-
-vim.keymap.set({ 'n' }, '`', function()
-    local ch = vim.fn.getchar()
-
-
-    if (ch >= 97 and ch <= 122) then  --[a-z]
-        local_marks.jump_to_local_mark(ch)
-    elseif ch >= 65 and ch <= 90 then --[A-Z]
-        global_marks.jump_to_global_mark(ch)
-    end
-end)
-
 -- GLOBAL MARKS
-
-local marks_global_delete_completion = function(arg_lead, cmd_line, cursor_pos)
+local marks_global_delete_completion = function(_, _, _)
     local working_dir = vim.fn.getcwd()
     local marks =
         utils.get_json_decoded_data(global_marks.opts.global_marks_file_path)
@@ -69,7 +47,7 @@ vim.api.nvim_create_user_command("MarksMaxGlobalKeySeq",
 
 -- LOCAL MARKS
 
-local marks_local_delete_completion = function(arg_lead, cmd_line, cursor_pos)
+local marks_local_delete_completion = function(_, _, _)
     local current_buffer = vim.api.nvim_buf_get_name(0)
     local marks =
         utils.get_json_decoded_data(

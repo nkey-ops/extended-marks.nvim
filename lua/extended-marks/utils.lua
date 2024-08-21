@@ -93,8 +93,8 @@ function M.remove_unmatched_values(pattern, values)
     return size
 end
 
---Listens to the pressed keys as long as a new is not a back tick or the total
---number of pressed keys doesn't exceed max_seq_keys
+--- Listens to the pressed keys as long as a new is not a back tick or the total
+--- number of pressed keys doesn't exceed max_seq_keys
 function M.get_mark_key(max_key_seq, first_char)
     assert(max_key_seq ~= nil
         and type(max_key_seq) == "number"
@@ -195,5 +195,15 @@ function M.copy_keys(table)
 
     return keys
 end
-return M
 
+---@param  dir string: data directory path
+---@return boolean: true whether directory was created or already existed,
+---false if the directory couldn't be created
+function M.try_create_data_dir(dir)
+    assert(dir ~= nil, "dir cannot be nil")
+    assert(type(dir) == 'string', "dir should be of type string")
+
+    return M.file_exists(dir)
+end
+
+return M
