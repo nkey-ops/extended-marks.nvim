@@ -1,13 +1,13 @@
 local utils = require('extended-marks.utils')
 
-local M = {}
+local global = {}
 local Opts = {
     data_file = vim.fn.glob("~/.local/share/nvim/extended-marks") .. "/global_marks.json",
     max_key_seq = 5,
     exhaustion_matcher = false,
 }
 
-M.set_global_mark = function(first_char)
+function global.set_global_mark(first_char)
     local mark_key = utils.get_mark_key(Opts.max_key_seq, first_char)
     if (mark_key == nil) then return end
 
@@ -21,10 +21,20 @@ M.set_global_mark = function(first_char)
     print("Marks:[" .. mark_key .. "]", marked_file)
 end
 
-M.jump_to_global_mark = function(first_char)
+---Jumps to the global mark (i.e. buffer if possible) using first_char as the
+---first character of the mark key and requesting from the client more characters
+---to input as long as 'max_key_seq' allows to create a complete mark key.
+---The mark key is used to locate the file attached to it and if it is present
+---the buffer will be opened using the located file in the current window
+---otherwise nothing will happen
+---@param first_char number represents the first character of the mark that should be in between
+--- 65 >= first_char <= 90 or 97 >= first_char <= 122
+--- that is equal to the pattern [a-zA-Z] if we convert to a string
+function global.jump_to_global_mark(first_char)
     assert(first_char ~= nil and type(first_char) == "number",
         "First mark key character value should not be nil and be of a type number")
-    assert(first_char >= 65 and first_char <= 90, "First mark key character value should be [A-Z]")
+    assert(first_char >= 65 and first_char <= 90 or first_char >= 97 and first_char <= 122,
+        "First mark key character value should be [a-zA-Z]")
 
     local working_dir = vim.fn.getcwd()
     local marks = utils.get_json_decoded_data(Opts.data_file, working_dir)
@@ -36,7 +46,6 @@ M.jump_to_global_mark = function(first_char)
     else
         mark_key = utils.get_mark_key(Opts.max_key_seq, first_char)
     end
-
 
     if mark_key == nil then return end
 
@@ -52,10 +61,10 @@ M.jump_to_global_mark = function(first_char)
         return
     end
 
-    -- doesn't the file exist or is no treadable?
+    -- the file doesn't exist or is no readable
     if vim.fn.filereadable(marked_file) == 0 then
         print(string.format(
-            "Marks: file wasn't found or is not readable \"%s\"", marked_file))
+            "MarksGlobal: file wasn't found or is not readable \"%s\"", marked_file))
         return
     end
 
@@ -68,15 +77,15 @@ M.jump_to_global_mark = function(first_char)
     vim.fn.bufload(buf)
     assert(vim.api.nvim_buf_is_loaded(buf), "buf should be loaded")
 
-    vim.api.nvim_buf_set_option(buf, "buflisted", true)
+    vim.api.nvim_set_option_value("buflisted", true, { buf = buf })
     assert(vim.fn.buflisted(buf) ~= 0, "buf should be listed")
 
-    vim.cmd(buf .. "b")
+    vim.api.nvim_set_current_buf(buf)
 end
 
 -- Global Functions
 
-function M.show_global_marks()
+function global.show_global_marks()
     local working_dir = vim.fn.getcwd()
     local marks = utils.get_json_decoded_data(
         Opts.data_file, working_dir)[working_dir]
@@ -86,7 +95,7 @@ function M.show_global_marks()
         false, { verbose = false })
 end
 
-function M.show_all_global_marks()
+function global.show_all_global_marks()
     local marks = utils.get_json_decoded_data(Opts.data_file)
     table.sort(marks)
 
@@ -94,7 +103,7 @@ function M.show_all_global_marks()
         false, { verbose = false })
 end
 
-function M.delete_global_mark(mark_key)
+function global.delete_global_mark(mark_key)
     assert(mark_key ~= nil, "mark_key cannot be nil")
     assert(string.len(mark_key) < 10, "mark_key is too long")
 
@@ -123,7 +132,7 @@ function M.delete_global_mark(mark_key)
     print("MarksDelete:[" .. mark_key .. "] was removed")
 end
 
-function M.set_max_seq_global_mark(max_seq)
+function global.set_max_seq_global_mark(max_seq)
     assert(max_seq ~= nil)
 
     if (type(max_seq) == "string") then
@@ -135,7 +144,7 @@ function M.set_max_seq_global_mark(max_seq)
     Opts.max_key_seq = max_seq
 end
 
-function M.set_options(opts)
+function global.set_options(opts)
     assert(opts ~= nil, "Opts cannot be nil")
     assert(type(opts) == 'table', "Opts should be of a type  table")
 
@@ -162,4 +171,4 @@ function M.set_options(opts)
     end
 end
 
-return M
+return global
