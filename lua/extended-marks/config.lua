@@ -22,7 +22,6 @@ local marks_global_delete_completion = function(_, _, _)
 end
 
 
-
 vim.api.nvim_create_user_command("MarksGlobal", function()
         global_marks.show_global_marks()
     end,
@@ -36,13 +35,6 @@ vim.api.nvim_create_user_command("MarksGlobalDelete",
         nargs = 1,
         complete = marks_global_delete_completion,
         desc = "Deletes a global mark using the mark's key"
-    })
-
-vim.api.nvim_create_user_command("MarksMaxGlobalKeySeq",
-    function(opts) global_marks.set_max_seq_glocal_mark(opts.args) end,
-    {
-        desc = "Sets a max sequens of characters of the mark-key for global marks",
-        nargs = 1
     })
 
 
@@ -88,32 +80,27 @@ local function set_max_seq(args)
 end
 
 
--- temporarily added for dev
-vim.api.nvim_create_user_command("MarksLocalFreeNamespace", function()
-        local_marks.space()
-    end,
-    { desc = "Lists buffer local marks" })
-
-vim.api.nvim_create_user_command("MarksLocalDeleteAll", function()
-        local_marks.wipe()
-    end,
-    { desc = "Lists buffer local marks" })
-
 vim.api.nvim_create_user_command("MarksLocal", function()
         local_marks.show_local_marks()
     end,
     { desc = "Lists buffer local marks" })
+
 vim.api.nvim_create_user_command("MarksLocalAll", function()
         local_marks.show_all_local_marks()
     end,
     { desc = "Lists all local marks with their buffer names" })
 
 vim.api.nvim_create_user_command("MarksLocalDelete",
-    function(opts) local_marks.delete_local_mark(opts.args) end, {
+    function(opts) local_marks.delete_mark(opts.args) end, {
         nargs = 1,
         complete = marks_local_delete_completion,
         desc = "Deletes a local mark using the mark's key"
     })
+
+vim.api.nvim_create_user_command("MarksLocalDeleteAll", function()
+        local_marks.delete_all_marks()
+    end,
+    { desc = "Deletes all the local marks for the current buffer" })
 
 vim.api.nvim_create_user_command("MarksSetMaxKeySeq",
     function(opts) set_max_seq(opts.fargs) end,
@@ -140,6 +127,7 @@ vim.api.nvim_create_autocmd({ "BufNew" }, {
         -- Uses nested autocmd because `vim.api.nvim_buf_line_count(args.buf)` would return zero
         vim.api.nvim_create_autocmd({ "BufEnter" }, {
             once = true,
+
             callback = function()
                 local_marks.restore()
             end

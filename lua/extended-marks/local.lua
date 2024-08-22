@@ -133,7 +133,9 @@ function M.show_all_local_marks()
         false, { verbose = false })
 end
 
-function M.delete_local_mark(mark_key)
+--- deletes the mark for the current buffer
+---@param mark_key string of the mark to be deleted from the current buffer
+function M.delete_mark(mark_key)
     assert(mark_key ~= nil, "mark_key cannot be nil")
     assert(type(mark_key) == "string", "mark_key should be of type strin")
     assert(string.len(mark_key) < 10, "mark_key is too long")
@@ -157,6 +159,17 @@ function M.delete_local_mark(mark_key)
     utils.write_marks(Opts.local_marks_file_path, marks)
 
     print(string.format("Marks:[%s:%s] was removed", mark_key, mark[2]))
+end
+
+--- deletes all the local marks for the current buffer
+function M.delete_all_marks()
+    local current_buffer_id = vim.api.nvim_get_current_buf()
+    local local_buffer_name = vim.api.nvim_buf_get_name(current_buffer_id)
+    local local_marks = utils.get_json_decoded_data(
+        Opts.local_marks_file_path, local_buffer_name)
+
+    local_marks[local_buffer_name] = nil
+    utils.write_marks(Opts.local_marks_file_path, local_marks)
 end
 
 function M.set_max_seq_local_mark(max_seq)
@@ -243,17 +256,6 @@ function M.restore()
             end
         end
     end
-end
-
--- temporarily added for dev
-function M.wipe()
-    local current_buffer_id = vim.api.nvim_get_current_buf()
-    local local_buffer_name = vim.api.nvim_buf_get_name(current_buffer_id)
-    local local_marks = utils.get_json_decoded_data(
-        Opts.local_marks_file_path, local_buffer_name)
-
-    local_marks[local_buffer_name] = nil
-    utils.write_marks(Opts.local_marks_file_path, local_marks)
 end
 
 function M.space()
