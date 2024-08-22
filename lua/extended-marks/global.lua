@@ -7,6 +7,40 @@ local Opts = {
     exhaustion_matcher = false,
 }
 
+--- @class Opts
+--- @field data_dir? string path to the data directory
+--- @field max_key_seq? number max number of characters in the mark (1 to 30)
+--- @field exhaustion_matcher? boolean whether to enable the exhaustion matcher
+
+--- sets the options for the global module
+--- @param opts Opts
+function global.set_options(opts)
+    assert(opts ~= nil, "Opts cannot be nil")
+    assert(type(opts) == 'table', "Opts should be of a type  table")
+
+    if opts.max_key_seq then
+        local max_key_seq = opts.max_key_seq
+        assert(type(max_key_seq) == 'number', "max_key_seq should be of type number")
+        assert(max_key_seq > 0 and max_key_seq < 30,
+            "max_key_seq should be more than zero and less than 30. Current value is " .. max_key_seq)
+        Opts.max_key_seq = max_key_seq
+    end
+
+    if opts.data_dir then
+        local data_dir = opts.data_dir
+        assert(type(data_dir) == 'string', "data_dir should be of type string")
+        assert(utils.try_create_data_dir(data_dir .. '/global_marks.json'),
+            "Couldn't create or use data file 'global_marks.json' with provided dir: " .. data_dir)
+        Opts.data_file = data_dir .. "/global_marks.json"
+    end
+
+    if opts.exhaustion_matcher then
+        local exhaustion_matcher = opts.exhaustion_matcher
+        assert(type(exhaustion_matcher) == 'boolean', "exhaustion_matcher should be of type boolean")
+        Opts.exhaustion_matcher = exhaustion_matcher
+    end
+end
+
 function global.set_global_mark(first_char)
     local mark_key = utils.get_mark_key(Opts.max_key_seq, first_char)
     if (mark_key == nil) then return end
@@ -18,7 +52,7 @@ function global.set_global_mark(first_char)
     data[working_dir][mark_key] = marked_file
 
     utils.write_marks(Opts.data_file, data)
-    print("Marks:[" .. mark_key .. "]", marked_file)
+    print("MarksGlobal:[" .. mark_key .. "]", marked_file)
 end
 
 ---Jumps to the global mark (i.e. buffer if possible) using first_char as the
@@ -84,7 +118,7 @@ function global.jump_to_global_mark(first_char)
 end
 
 -- Global Functions
-
+--- displays a list of all global marks related to the current working directory (cwd)
 function global.show_global_marks()
     local working_dir = vim.fn.getcwd()
     local marks = utils.get_json_decoded_data(
@@ -95,6 +129,7 @@ function global.show_global_marks()
         false, { verbose = false })
 end
 
+--- displays a list of all global marks and their related current working directories (cwd)
 function global.show_all_global_marks()
     local marks = utils.get_json_decoded_data(Opts.data_file)
     table.sort(marks)
@@ -103,6 +138,8 @@ function global.show_all_global_marks()
         false, { verbose = false })
 end
 
+--- deletes the global mark withing the current working directory (cwd)
+--- @param mark_key string of the mark to be deleted
 function global.delete_global_mark(mark_key)
     assert(mark_key ~= nil, "mark_key cannot be nil")
     assert(string.len(mark_key) < 10, "mark_key is too long")
@@ -117,7 +154,7 @@ function global.delete_global_mark(mark_key)
 
     local mark = data[working_dir][mark_key]
     if (mark == nil) then
-        print("MarksDelete:[" .. mark_key .. "] wasn't found")
+        print("MarksGlobal: Couldn't delete because [" .. mark_key .. "] wasn't found")
         return
     end
 
@@ -129,46 +166,7 @@ function global.delete_global_mark(mark_key)
 
     utils.write_marks(Opts.data_file, data)
 
-    print("MarksDelete:[" .. mark_key .. "] was removed")
-end
-
-function global.set_max_seq_global_mark(max_seq)
-    assert(max_seq ~= nil)
-
-    if (type(max_seq) == "string") then
-        max_seq = tonumber(max_seq)
-    end
-
-    assert(type(max_seq) == "number" and max_seq > 0 and max_seq < 50)
-
-    Opts.max_key_seq = max_seq
-end
-
-function global.set_options(opts)
-    assert(opts ~= nil, "Opts cannot be nil")
-    assert(type(opts) == 'table', "Opts should be of a type  table")
-
-    if opts.max_key_seq then
-        local max_key_seq = opts.max_key_seq
-        assert(type(max_key_seq) == 'number', "max_key_seq should be of type number")
-        assert(max_key_seq > 0 and max_key_seq < 30,
-            "max_key_seq should be more than zero and less than 30. Current value is " .. max_key_seq)
-        Opts.max_key_seq = max_key_seq
-    end
-
-    if opts.data_dir then
-        local data_dir = opts.data_dir
-        assert(type(data_dir) == 'string', "data_dir should be of type string")
-        assert(utils.try_create_data_dir(data_dir .. '/global_marks.json'),
-            "Couldn't create or use data file 'global_marks.json' with provided dir: " .. data_dir)
-        Opts.data_file = data_dir .. "/global_marks.json"
-    end
-
-    if opts.exhaustion_matcher then
-        local exhaustion_matcher = opts.exhaustion_matcher
-        assert(type(exhaustion_matcher) == 'boolean', "exhaustion_matcher should be of type boolean")
-        Opts.exhaustion_matcher = exhaustion_matcher
-    end
+    print("MarksGlobal:[" .. mark_key .. "] was removed")
 end
 
 return global
