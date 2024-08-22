@@ -1,5 +1,6 @@
 local global_marks = require('extended-marks.global')
 local local_marks = require('extended-marks.local')
+local tab_marks = require('extended-marks.tab')
 local utils = require('extended-marks.utils')
 
 -- GLOBAL MARKS
@@ -46,7 +47,6 @@ vim.api.nvim_create_user_command("MarksMaxGlobalKeySeq",
 
 
 -- LOCAL MARKS
-
 local marks_local_delete_completion = function(_, _, _)
     local current_buffer = vim.api.nvim_buf_get_name(0)
     local marks =
@@ -64,6 +64,29 @@ local marks_local_delete_completion = function(_, _, _)
 
     return mark_keys
 end
+
+local function set_max_seq(args)
+    assert(type(args) == "table", "args shoulbe be of a type table")
+    assert(args[1] ~= nil and args[2] ~= nil, "args should contain 'module' and 'max key sequence'")
+    assert(type(args[1]) == "string" and (args[1] == 'global' or args[1] == 'local' or args[1] == 'tab'),
+        "first argumet should be a string and equal to 'global', 'local', or 'tab'")
+    assert(tonumber(args[2]), "shoulbe be a number")
+
+    local module = args[1]
+    local max_key_seq = tonumber(args[2])
+
+    if module == 'global' then
+        global_marks.set_options({ max_key_seq = max_key_seq })
+        print("MarksGlobal: set max_key_seq to: " .. max_key_seq)
+    elseif module == 'local' then
+        local_marks.set_options({ max_key_seq = max_key_seq })
+        print("MarksLocal: set max_key_seq to: " .. max_key_seq)
+    elseif module == 'tab' then
+        tab_marks.set_options({ max_key_seq = max_key_seq })
+        print("MarksTab: set max_key_seq to: " .. max_key_seq)
+    end
+end
+
 
 -- temporarily added for dev
 vim.api.nvim_create_user_command("MarksLocalFreeNamespace", function()
@@ -92,11 +115,15 @@ vim.api.nvim_create_user_command("MarksLocalDelete",
         desc = "Deletes a local mark using the mark's key"
     })
 
-vim.api.nvim_create_user_command("MarksMaxLocalKeySeq",
-    function(opts) local_marks.set_max_seq_local_mark(opts.args) end,
+vim.api.nvim_create_user_command("MarksSetMaxKeySeq",
+    function(opts) set_max_seq(opts.fargs) end,
     {
-        desc = "Sets a max sequens of characters of the mark-key for local marks",
-        nargs = 1
+        desc = "Sets a max sequens of characters of the mark-key for a specific module",
+        nargs = "+",
+        complete = function(_, b, _)
+            return b:match('global') or b:match('local') or b:match('tab')
+                and {} or { "global", "local", "tab" }
+        end
     })
 
 -- Autocmds
