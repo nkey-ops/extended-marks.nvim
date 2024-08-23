@@ -13,11 +13,11 @@ local Opts = {
             exhaustion_matcher = false, -- if max_key_seq is 1 this parameter will always be false
         },
         global = {
-            max_key_seq = 5,
+            max_key_seq = 4,
             exhaustion_matcher = false
         },
         tab = {
-            max_key_seq = 5,
+            max_key_seq = 1,
             exhaustion_matcher = false,
         },
     }
