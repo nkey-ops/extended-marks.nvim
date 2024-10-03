@@ -27,7 +27,7 @@ M.set_mark = function(first_char)
     local tabpage = api.nvim_win_get_tabpage(win);
     api.nvim_tabpage_set_var(tabpage, "mark_key", mark_key)
 
-    print(string.format("Marks:[%s:%s]", mark_key, tabpage))
+    print(string.format("MarksTab:[%s:%s]", mark_key, tabpage))
 end
 
 M.jump_to_mark = function(first_char)
