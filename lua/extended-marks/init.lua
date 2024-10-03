@@ -9,7 +9,7 @@ local Opts = {
     module = {
         locaL = {
             max_key_seq = 1,            -- valid from 1 to 30
-            sign_text = 0,              -- 0 for no, 1 or 2 for number of characters
+            sign_column = 1,            -- 0 for no, 1 or 2 for number of characters
             exhaustion_matcher = false, -- if max_key_seq is 1 this parameter will always be false
         },
         global = {
