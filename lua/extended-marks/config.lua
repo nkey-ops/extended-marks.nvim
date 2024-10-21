@@ -1,13 +1,13 @@
-local global_marks = require('extended-marks.global')
+local cwd_marks = require('extended-marks.cwd')
 local local_marks = require('extended-marks.local')
 local tab_marks = require('extended-marks.tab')
 local utils = require('extended-marks.utils')
 
--- GLOBAL MARKS
-local marks_global_delete_completion = function(_, _, _)
+-- CWD MARKS
+local marks_cwd_delete_completion = function(_, _, _)
     local working_dir = vim.fn.getcwd()
     local marks =
-        utils.get_json_decoded_data(global_marks.opts.global_marks_file_path)
+        utils.get_json_decoded_data(cwd_marks.opts.cwd_marks_file_path)
 
     table.sort(marks[working_dir])
 
@@ -22,19 +22,19 @@ local marks_global_delete_completion = function(_, _, _)
 end
 
 
-vim.api.nvim_create_user_command("MarksGlobal", function()
-        global_marks.show_global_marks()
+vim.api.nvim_create_user_command("MarksCwd", function()
+        cwd_marks.show_cwd_marks()
     end,
     { desc = "Lists marked files for current dirrectory" })
-vim.api.nvim_create_user_command("MarksGlobalAll", function()
-        global_marks.show_all_global_marks()
+vim.api.nvim_create_user_command("MarksCwdAll", function()
+        cwd_marks.show_all_cwd_marks()
     end,
     { desc = "Lists all marked files with their current dirrectories" })
-vim.api.nvim_create_user_command("MarksGlobalDelete",
-    function(opts) global_marks.delete_global_mark(opts.args) end, {
+vim.api.nvim_create_user_command("MarksCwdDelete",
+    function(opts) cwd_marks.delete_cwd_mark(opts.args) end, {
         nargs = 1,
-        complete = marks_global_delete_completion,
-        desc = "Deletes a global mark using the mark's key"
+        complete = marks_cwd_delete_completion,
+        desc = "Deletes a cwd mark using the mark's key"
     })
 
 
@@ -60,16 +60,16 @@ end
 local function set_max_seq(args)
     assert(type(args) == "table", "args shoulbe be of a type table")
     assert(args[1] ~= nil and args[2] ~= nil, "args should contain 'module' and 'max key sequence'")
-    assert(type(args[1]) == "string" and (args[1] == 'global' or args[1] == 'local' or args[1] == 'tab'),
-        "first argumet should be a string and equal to 'global', 'local', or 'tab'")
+    assert(type(args[1]) == "string" and (args[1] == 'cwd' or args[1] == 'local' or args[1] == 'tab'),
+        "first argumet should be a string and equal to 'cwd', 'local', or 'tab'")
     assert(tonumber(args[2]), "shoulbe be a number")
 
     local module = args[1]
     local max_key_seq = tonumber(args[2])
 
-    if module == 'global' then
-        global_marks.set_options({ max_key_seq = max_key_seq })
-        print("MarksGlobal: set max_key_seq to: " .. max_key_seq)
+    if module == 'cwd' then
+        cwd_marks.set_options({ max_key_seq = max_key_seq })
+        print("MarksCwd: set max_key_seq to: " .. max_key_seq)
     elseif module == 'local' then
         local_marks.set_options({ max_key_seq = max_key_seq })
         print("MarksLocal: set max_key_seq to: " .. max_key_seq)
@@ -108,8 +108,8 @@ vim.api.nvim_create_user_command("MarksSetMaxKeySeq",
         desc = "Sets a max sequens of characters of the mark-key for a specific module",
         nargs = "+",
         complete = function(_, b, _)
-            return b:match('global') or b:match('local') or b:match('tab')
-                and {} or { "global", "local", "tab" }
+            return b:match('cwd') or b:match('local') or b:match('tab')
+                and {} or { "cwd", "local", "tab" }
         end
     })
 

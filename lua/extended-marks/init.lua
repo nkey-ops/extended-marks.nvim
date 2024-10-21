@@ -1,4 +1,4 @@
-local global_marks = require('extended-marks.global')
+local cwd_marks = require('extended-marks.cwd')
 local local_marks = require('extended-marks.local')
 local tab_marks = require('extended-marks.tab')
 require("extended-marks.config")
@@ -12,7 +12,7 @@ local Opts = {
             sign_column = 1,            -- 0 for no, 1 or 2 for number of characters
             exhaustion_matcher = false, -- if max_key_seq is 1 this parameter will always be false
         },
-        global = {
+        cwd = {
             max_key_seq = 4,
             exhaustion_matcher = false
         },
@@ -32,9 +32,9 @@ M.setup = function(opts)
 
     assert(type(opts) == 'table', "Opts should be of a type  table")
 
-    if opts.module.global then
-        opts.module.global.data_dir = opts.data_dir
-        global_marks.set_options(opts.module.global)
+    if opts.module.cwd then
+        opts.module.cwd.data_dir = opts.data_dir
+        cwd_marks.set_options(opts.module.cwd)
     end
 
     if opts.module.locaL then
@@ -59,7 +59,7 @@ M.set_mark = function()
     if (ch >= 97 and ch <= 122) then  --[a-z]
         local_marks.set_local_mark(ch)
     elseif ch >= 65 and ch <= 90 then --[A-Z]
-        global_marks.set_global_mark(ch)
+        cwd_marks.set_cwd_mark(ch)
     end
 end
 
@@ -74,7 +74,7 @@ M.jump_to_mark = function()
     if (ch >= 97 and ch <= 122) then  --[a-z]
         local_marks.jump_to_local_mark(ch)
     elseif ch >= 65 and ch <= 90 then --[A-Z]
-        global_marks.jump_to_global_mark(ch)
+        cwd_marks.jump_to_cwd_mark(ch)
     elseif ch == string.byte('<') then
         vim.cmd("'<")
     elseif ch == string.byte('>') then

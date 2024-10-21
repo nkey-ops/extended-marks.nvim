@@ -1,8 +1,8 @@
 local utils = require('extended-marks.utils')
 
-local global = {}
+local cwd = {}
 local Opts = {
-    data_file = vim.fn.glob("~/.local/share/nvim/extended-marks") .. "/global_marks.json",
+    data_file = vim.fn.glob("~/.local/share/nvim/extended-marks") .. "/cwd_marks.json",
     max_key_seq = 5,
     exhaustion_matcher = false,
 }
@@ -12,9 +12,9 @@ local Opts = {
 --- @field max_key_seq? number max number of characters in the mark (1 to 30)
 --- @field exhaustion_matcher? boolean whether to enable the exhaustion matcher
 
---- sets the options for the global module
+--- sets the options for the cwd module
 --- @param opts Opts
-function global.set_options(opts)
+function cwd.set_options(opts)
     assert(opts ~= nil, "Opts cannot be nil")
     assert(type(opts) == 'table', "Opts should be of a type  table")
 
@@ -29,9 +29,9 @@ function global.set_options(opts)
     if opts.data_dir then
         local data_dir = opts.data_dir
         assert(type(data_dir) == 'string', "data_dir should be of type string")
-        assert(utils.try_create_data_dir(data_dir .. '/global_marks.json'),
-            "Couldn't create or use data file 'global_marks.json' with provided dir: " .. data_dir)
-        Opts.data_file = data_dir .. "/global_marks.json"
+        assert(utils.try_create_data_dir(data_dir .. '/cwd_marks.json'),
+            "Couldn't create or use data file 'cwd_marks.json' with provided dir: " .. data_dir)
+        Opts.data_file = data_dir .. "/cwd_marks.json"
     end
 
     if opts.exhaustion_matcher then
@@ -41,7 +41,7 @@ function global.set_options(opts)
     end
 end
 
-function global.set_global_mark(first_char)
+function cwd.set_cwd_mark(first_char)
     local mark_key = utils.get_mark_key(Opts.max_key_seq, first_char)
     if (mark_key == nil) then return end
 
@@ -52,10 +52,10 @@ function global.set_global_mark(first_char)
     data[working_dir][mark_key] = marked_file
 
     utils.write_marks(Opts.data_file, data)
-    print("MarksGlobal:[" .. mark_key .. "]", marked_file)
+    print("MarksCwd:[" .. mark_key .. "]", marked_file)
 end
 
----Jumps to the global mark (i.e. buffer if possible) using first_char as the
+---Jumps to the cwd mark (i.e. buffer if possible) using first_char as the
 ---first character of the mark key and requesting from the client more characters
 ---to input as long as 'max_key_seq' allows to create a complete mark key.
 ---The mark key is used to locate the file attached to it and if it is present
@@ -64,7 +64,7 @@ end
 ---@param first_char number represents the first character of the mark that should be in between
 --- 65 >= first_char <= 90 or 97 >= first_char <= 122
 --- that is equal to the pattern [a-zA-Z] if we convert to a string
-function global.jump_to_global_mark(first_char)
+function cwd.jump_to_cwd_mark(first_char)
     assert(first_char ~= nil and type(first_char) == "number",
         "First mark key character value should not be nil and be of a type number")
     assert(first_char >= 65 and first_char <= 90 or first_char >= 97 and first_char <= 122,
@@ -98,7 +98,7 @@ function global.jump_to_global_mark(first_char)
     -- the file doesn't exist or is no readable
     if vim.fn.filereadable(marked_file) == 0 then
         print(string.format(
-            "MarksGlobal: file wasn't found or is not readable \"%s\"", marked_file))
+            "MarksCwd: file wasn't found or is not readable \"%s\"", marked_file))
         return
     end
 
@@ -117,9 +117,9 @@ function global.jump_to_global_mark(first_char)
     vim.api.nvim_set_current_buf(buf)
 end
 
--- Global Functions
---- displays a list of all global marks related to the current working directory (cwd)
-function global.show_global_marks()
+-- Cwd Functions
+--- displays a list of all cwd marks related to the current working directory (cwd)
+function cwd.show_cwd_marks()
     local working_dir = vim.fn.getcwd()
     local marks = utils.get_json_decoded_data(
         Opts.data_file, working_dir)[working_dir]
@@ -129,8 +129,8 @@ function global.show_global_marks()
         false, { verbose = false })
 end
 
---- displays a list of all global marks and their related current working directories (cwd)
-function global.show_all_global_marks()
+--- displays a list of all cwd marks and their related current working directories (cwd)
+function cwd.show_all_cwd_marks()
     local marks = utils.get_json_decoded_data(Opts.data_file)
     table.sort(marks)
 
@@ -138,9 +138,9 @@ function global.show_all_global_marks()
         false, { verbose = false })
 end
 
---- deletes the global mark withing the current working directory (cwd)
+--- deletes the cwd mark withing the current working directory (cwd)
 --- @param mark_key string of the mark to be deleted
-function global.delete_global_mark(mark_key)
+function cwd.delete_cwd_mark(mark_key)
     assert(mark_key ~= nil, "mark_key cannot be nil")
     assert(string.len(mark_key) < 10, "mark_key is too long")
 
@@ -154,7 +154,7 @@ function global.delete_global_mark(mark_key)
 
     local mark = data[working_dir][mark_key]
     if (mark == nil) then
-        print("MarksGlobal: Couldn't delete because [" .. mark_key .. "] wasn't found")
+        print("MarksCwd: Couldn't delete because [" .. mark_key .. "] wasn't found")
         return
     end
 
@@ -166,7 +166,7 @@ function global.delete_global_mark(mark_key)
 
     utils.write_marks(Opts.data_file, data)
 
-    print("MarksGlobal:[" .. mark_key .. "] was removed")
+    print("MarksCwd:[" .. mark_key .. "] was removed")
 end
 
-return global
+return cwd
