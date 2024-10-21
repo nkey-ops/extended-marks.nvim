@@ -51,6 +51,11 @@ end
 M.set_mark = function()
     local ch = vim.fn.getchar()
 
+    if (type(ch) == 'string') then
+        return
+    end
+    assert(type(ch) == 'number')
+
     if (ch >= 97 and ch <= 122) then  --[a-z]
         local_marks.set_local_mark(ch)
     elseif ch >= 65 and ch <= 90 then --[A-Z]
@@ -60,6 +65,11 @@ end
 
 M.jump_to_mark = function()
     local ch = vim.fn.getchar()
+
+    if (type(ch) == 'string') then
+        return
+    end
+    assert(type(ch) == 'number')
 
     if (ch >= 97 and ch <= 122) then  --[a-z]
         local_marks.jump_to_local_mark(ch)
@@ -72,6 +82,11 @@ end
 M.set_tab_mark = function()
     local ch = vim.fn.getchar()
 
+    if (type(ch) == 'string') then
+        return
+    end
+    assert(type(ch) == 'number')
+
     if (ch >= 97 and ch <= 122) then --[a-z]
         tab_marks.set_mark(ch)
     end
@@ -79,6 +94,12 @@ end
 
 M.jump_to_tab_mark = function()
     local ch = vim.fn.getchar()
+
+    if (type(ch) == 'string') then
+        return
+    end
+
+    assert(type(ch) == 'number')
 
     if (ch >= 97 and ch <= 122) then --[a-z]
         tab_marks.jump_to_mark(ch)
