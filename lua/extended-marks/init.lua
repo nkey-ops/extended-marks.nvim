@@ -75,6 +75,30 @@ M.jump_to_mark = function()
         local_marks.jump_to_local_mark(ch)
     elseif ch >= 65 and ch <= 90 then --[A-Z]
         global_marks.jump_to_global_mark(ch)
+    elseif ch == string.byte('<') then
+        vim.cmd("'<")
+    elseif ch == string.byte('>') then
+        vim.cmd("'>")
+    elseif ch == string.byte('\'') then
+        vim.cmd("''")
+    elseif ch == string.byte('"') then
+        vim.cmd("'\"")
+    elseif ch == string.byte('^') then
+        vim.cmd("'^")
+    elseif ch == string.byte('.') then
+        vim.cmd("'.")
+    elseif ch == string.byte('(') then
+        vim.cmd("'(")
+    elseif ch == string.byte(')') then
+        vim.cmd("')")
+    elseif ch == string.byte('{') then
+        vim.cmd("'{")
+    elseif ch == string.byte('}') then
+        vim.cmd("'}")
+    elseif ch == string.byte(']') then
+        vim.cmd("']")
+    elseif ch == string.byte('[') then
+        vim.cmd("'[")
     end
 end
 
@@ -103,6 +127,12 @@ M.jump_to_tab_mark = function()
 
     if (ch >= 97 and ch <= 122) then --[a-z]
         tab_marks.jump_to_mark(ch)
+    elseif (ch == string.byte("'")) then
+        vim.cmd("tabnext #") -- last accessed tab
+    elseif (ch == string.byte("$")) then
+        vim.cmd("tabnext $") -- last tab
+    elseif (ch == string.byte("1")) then
+        vim.cmd("1tabnext")  -- first tab
     end
 end
 
