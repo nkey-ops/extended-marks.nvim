@@ -300,7 +300,7 @@ function locaL.restore()
 
         -- adding mark from the data file if it wasn't found in the namespace
         if not was_found then
-            if s_mark[2] <= max_lines then -- isn't out of bounds
+            if s_mark[2] < max_lines then -- isn't out of bounds
                 local marked_line_string = vim.api.nvim_buf_get_lines(
                     current_buffer_id, s_mark[2], s_mark[2] + 1, true)[1]
 
@@ -319,7 +319,7 @@ function locaL.restore()
                 vim.api.nvim_buf_set_extmark(current_buffer_id,
                     Opts.namespace, s_mark[2], s_mark[3], opts)
             else
-                print(string.format("MarksLocal: The mark was out of bounds: [%s:%s] max lines %s",
+                print(string.format("MarksLocal: The mark was out of bounds: [%s:%s](zero-based) max lines %s",
                     s_mark_key, s_mark[2], max_lines))
 
                 buffers[local_buffer_name][s_mark_key] = nil
