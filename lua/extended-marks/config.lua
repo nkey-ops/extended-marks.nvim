@@ -7,7 +7,7 @@ local utils = require('extended-marks.utils')
 local marks_cwd_delete_completion = function(_, _, _)
     local working_dir = vim.fn.getcwd()
     local marks =
-        utils.get_json_decoded_data(cwd_marks.opts.cwd_marks_file_path)
+        utils.get_json_decoded_data(cwd_marks.Opts.data_file)
 
     table.sort(marks[working_dir])
 
@@ -43,7 +43,7 @@ local marks_local_delete_completion = function(_, _, _)
     local current_buffer = vim.api.nvim_buf_get_name(0)
     local marks =
         utils.get_json_decoded_data(
-            local_marks.opts.local_marks_file_path, current_buffer)
+            local_marks.Opts.data_file, current_buffer)
 
     table.sort(marks[current_buffer])
 

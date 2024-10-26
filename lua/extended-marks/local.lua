@@ -20,6 +20,8 @@ local Opts = {
     exhaustion_matcher = false,
 }
 
+locaL.Opts = Opts
+
 --- @class LocalOpts
 --- @field data_dir? string path to the data directory
 --- @field max_key_seq? number max number of characters in the mark (1 to 30)

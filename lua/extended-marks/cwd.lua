@@ -6,6 +6,7 @@ local Opts = {
     max_key_seq = 5,
     exhaustion_matcher = false,
 }
+cwd.Opts = Opts
 
 --- @class Opts
 --- @field data_dir? string path to the data directory
