@@ -6,21 +6,19 @@ require("extended-marks.config")
 local M = {}
 local Opts = {
     data_dir = vim.fn.glob("~/.cache/nvim/extended-marks"), -- full path
-    module = {
-        locaL = {
-            max_key_seq = 1,            -- valid from 1 to 30
-            sign_column = 1,            -- 0 for no, 1 or 2 for number of characters
-            exhaustion_matcher = false, -- if max_key_seq is 1 this parameter will always be false
-        },
-        cwd = {
-            max_key_seq = 4,
-            exhaustion_matcher = false
-        },
-        tab = {
-            max_key_seq = 1,
-            exhaustion_matcher = false,
-        },
-    }
+    locaL = {
+        max_key_seq = 1,                                    -- valid from 1 to 30
+        sign_column = 1,                                    -- 0 for no, 1 or 2 for number of characters
+        exhaustion_matcher = false,                         -- if max_key_seq is 1 this parameter will always be false
+    },
+    cwd = {
+        max_key_seq = 4,
+        exhaustion_matcher = false
+    },
+    tab = {
+        max_key_seq = 1,
+        exhaustion_matcher = false,
+    },
 }
 
 M.setup = function(opts)
@@ -32,19 +30,19 @@ M.setup = function(opts)
 
     assert(type(opts) == 'table', "Opts should be of a type  table")
 
-    if opts.module.cwd then
-        opts.module.cwd.data_dir = opts.data_dir
-        cwd_marks.set_options(opts.module.cwd)
+    if opts.cwd then
+        opts.cwd.data_dir = opts.data_dir
+        cwd_marks.set_options(opts.cwd)
     end
 
-    if opts.module.locaL then
-        opts.module.locaL.data_dir = opts.data_dir
-        local_marks.set_options(opts.module.locaL)
+    if opts.locaL then
+        opts.locaL.data_dir = opts.data_dir
+        local_marks.set_options(opts.locaL)
     end
 
-    if opts.module.tab then
-        opts.module.tab.data_dir = opts.data_dir
-        tab_marks.set_options(opts.module.tab)
+    if opts.tab then
+        opts.tab.data_dir = opts.data_dir
+        tab_marks.set_options(opts.tab)
     end
 end
 
