@@ -59,13 +59,18 @@ end
 
 local function set_max_seq(args)
     assert(type(args) == "table", "args shoulbe be of a type table")
-    assert(args[1] ~= nil and args[2] ~= nil, "args should contain 'module' and 'max key sequence'")
+    assert(args[1] ~= nil and args[2] ~= nil,
+        "args should contain 'module'(cwd|local|tab) and 'max key sequence'")
     assert(type(args[1]) == "string" and (args[1] == 'cwd' or args[1] == 'local' or args[1] == 'tab'),
         "first argumet should be a string and equal to 'cwd', 'local', or 'tab'")
-    assert(tonumber(args[2]), "shoulbe be a number")
+    assert(tonumber(args[2]), "the second argument shoulbe be a number")
 
     local module = args[1]
     local max_key_seq = tonumber(args[2])
+
+    assert(max_key_seq > 0 and max_key_seq < 30,
+        "max_key_seq should be more than zero and less than 30. "
+        .. "Current value is " .. max_key_seq)
 
     if module == 'cwd' then
         cwd_marks.set_options({ max_key_seq = max_key_seq })

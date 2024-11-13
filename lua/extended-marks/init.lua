@@ -1,7 +1,7 @@
 local cwd_marks = require('extended-marks.cwd')
 local local_marks = require('extended-marks.local')
 local tab_marks = require('extended-marks.tab')
-require("extended-marks.config")
+local utils = require('extended-marks.utils')
 
 local M = {}
 local Opts = {
@@ -28,7 +28,17 @@ M.setup = function(opts)
         opts = vim.tbl_extend("force", Opts, opts)
     end
 
-    assert(type(opts) == 'table', "Opts should be of a type  table")
+    assert(type(opts) == 'table', "Opts should be of a type table")
+
+    if opts.data_dir then
+        utils.validate_dir(opts.data_dir)
+        opts.data_dir = opts.data_dir:gsub('/$', '')
+
+        opts.data_dir = opts.data_dir .. '/extended-marks'
+        os.execute("mkdir " .. opts.data_dir)
+
+        utils.validate_dir(opts.data_dir)
+    end
 
     if opts.cwd then
         opts.cwd.data_dir = opts.data_dir
@@ -44,6 +54,8 @@ M.setup = function(opts)
         opts.tab.data_dir = opts.data_dir
         tab_marks.set_options(opts.tab)
     end
+
+    require("extended-marks.config")
 end
 
 M.set_mark = function()

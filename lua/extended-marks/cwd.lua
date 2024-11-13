@@ -30,7 +30,7 @@ function cwd.set_options(opts)
     if opts.data_dir then
         local data_dir = opts.data_dir
         assert(type(data_dir) == 'string', "data_dir should be of type string")
-        assert(utils.try_create_data_dir(data_dir .. '/cwd_marks.json'),
+        assert(utils.try_create_file(data_dir .. '/cwd_marks.json'),
             "Couldn't create or use data file 'cwd_marks.json' with provided dir: " .. data_dir)
         Opts.data_file = data_dir .. "/cwd_marks.json"
     end
