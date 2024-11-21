@@ -6,15 +6,16 @@ local Opts = {
 }
 
 local api = vim.api
-local function get_marks()
+
+M.show_tab_marks = function()
     local marks = {}
     for i, tab_id in pairs(api.nvim_list_tabpages()) do
         local mark_key = vim.t[tab_id]["mark_key"]
         if mark_key then
-            marks[i] = mark_key
+            marks[i .. ""] = mark_key
         end
     end
-    return marks
+    vim.api.nvim_echo({ { vim.inspect(marks) } }, false, { verbose = false })
 end
 
 

@@ -107,6 +107,12 @@ vim.api.nvim_create_user_command("MarksLocalDeleteAll", function()
     end,
     { desc = "Deletes all the local marks for the current buffer" })
 
+vim.api.nvim_create_user_command("MarksTab", function()
+        tab_marks.show_tab_marks()
+    end,
+    { desc = "Lists tab marks" })
+
+
 vim.api.nvim_create_user_command("MarksSetMaxKeySeq",
     function(opts) set_max_seq(opts.fargs) end,
     {
