@@ -17,7 +17,6 @@ local Opts = {
     namespace = vim.api.nvim_create_namespace("local_marks"),
     max_key_seq = 1,
     sign_column = 1,
-    exhaustion_matcher = false,
 }
 
 locaL.Opts = Opts
@@ -26,7 +25,6 @@ locaL.Opts = Opts
 --- @field data_dir? string path to the data directory
 --- @field max_key_seq? number max number of characters in the mark (1 to 30)
 --- @field sign_column? number 0 for no, 1 or 2 for number of characters
---- @field exhaustion_matcher? boolean whether to enable the exhaustion matcher
 
 --- sets the options for the local module
 --- @param opts LocalOpts
@@ -55,12 +53,6 @@ function locaL.set_options(opts)
         assert(type(sign_column) == 'number', "sing_text should be of type number")
         assert(sign_column >= 0 and sign_column <= 2, "sing_text can only have values 0, 1 and 2")
         Opts.sign_column = sign_column
-    end
-
-    if opts.exhaustion_matcher then
-        local exhaustion_matcher = opts.exhaustion_matcher
-        assert(type(exhaustion_matcher) == 'boolean', "exhaustion_matcher should be of type boolean")
-        Opts.exhaustion_matcher = exhaustion_matcher
     end
 end
 
@@ -122,14 +114,7 @@ function locaL.jump_to_local_mark(first_char)
         utils.get_json_decoded_data(
             Opts.data_file, local_buffer_name)[local_buffer_name]
 
-    local mark_key
-    if Opts.exhaustion_matcher then
-        mark_key = utils.get_last_mark_key(Opts.max_key_seq,
-            utils.copy_keys(local_marks), first_char)
-    else
-        mark_key = utils.get_mark_key(Opts.max_key_seq, first_char)
-    end
-
+    local mark_key = utils.get_mark_key(Opts.max_key_seq, first_char)
 
     -- the remaining mark_key wasn't found(it was miss-typed apparently) just ignore the jump
     if mark_key == nil or local_marks[mark_key] == nil then return end

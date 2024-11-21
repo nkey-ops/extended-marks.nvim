@@ -9,15 +9,12 @@ local Opts = {
     locaL = {
         max_key_seq = 1,                      -- valid from 1 to 30
         sign_column = 1,                      -- 0 for no, 1 or 2 for number of characters
-        exhaustion_matcher = false,           -- if max_key_seq is 1 this parameter will always be false
     },
     cwd = {
         max_key_seq = 4,
-        exhaustion_matcher = false
     },
     tab = {
         max_key_seq = 1,
-        exhaustion_matcher = false,
     },
 }
 
@@ -35,7 +32,9 @@ M.setup = function(opts)
         opts.data_dir = opts.data_dir:gsub('/$', '')
 
         opts.data_dir = opts.data_dir .. '/extended-marks'
-        os.execute("mkdir " .. opts.data_dir)
+        if (vim.fn.isdirectory(opts.data_dir) == 0) then
+            os.execute("mkdir " .. opts.data_dir)
+        end
 
         utils.validate_dir(opts.data_dir)
     end

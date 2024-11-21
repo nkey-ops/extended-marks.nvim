@@ -3,7 +3,6 @@ local utils = require('extended-marks.utils')
 local M = {}
 local Opts = {
     max_key_seq = 1,
-    exhaustion_matcher = false
 }
 
 local api = vim.api
@@ -36,13 +35,7 @@ M.jump_to_mark = function(first_char)
     assert(first_char >= 65 and first_char <= 90 or first_char >= 97 and first_char <= 122,
         "First mark key character value should be [a-zA-Z]")
 
-    local mark_key
-    if Opts.exhaustion_matcher then
-        mark_key = utils.get_last_mark_key(
-            Opts.max_key_seq, utils.copy_keys(get_marks()), first_char)
-    else
-        mark_key = utils.get_mark_key(Opts.max_key_seq, first_char)
-    end
+    local mark_key = utils.get_mark_key(Opts.max_key_seq, first_char)
 
     if mark_key == nil then return end
 
@@ -65,12 +58,6 @@ function M.set_options(opts)
         assert(max_key_seq > 0 and max_key_seq < 30,
             "max_key_seq should be more than zero and less than 30. Current value is " .. max_key_seq)
         Opts.max_key_seq = max_key_seq
-    end
-
-    if opts.exhaustion_matcher then
-        local exhaustion_matcher = opts.exhaustion_matcher
-        assert(type(exhaustion_matcher) == 'boolean', "exhaustion_matcher should be of type boolean")
-        Opts.exhaustion_matcher = exhaustion_matcher
     end
 end
 

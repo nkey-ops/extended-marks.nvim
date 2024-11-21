@@ -76,15 +76,12 @@ Lazy.nvim
             locaL = { -- don't confuse with 'local'
                 max_key_seq = 1,            -- valid from 1 to 30
                 sign_column = 1,            -- 0 for no, 1 or 2 for number of characters 
-                exhaustion_matcher = false, -- if max_key_seq is 1 this parameter will always be false
             },
             cwd = {
                 max_key_seq = 4,
-                exhaustion_matcher = false
             },
             tab = {
                 max_key_seq = 1,
-                exhaustion_matcher = false,
             },
         })
     end,
