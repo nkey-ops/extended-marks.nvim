@@ -88,7 +88,7 @@ M.jump_to_mark = function()
         vim.cmd("'<")
     elseif ch == string.byte('>') then
         vim.cmd("'>")
-    elseif ch == string.byte('\'') then
+    elseif ch == string.byte('`') then
         vim.cmd("''")
     elseif ch == string.byte('"') then
         vim.cmd("'\"")
