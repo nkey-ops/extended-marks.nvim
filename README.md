@@ -14,7 +14,7 @@ Still in development process...
 ## How to Use
 Hit `m` (default config) to start writing a first letter of the mark.  If the first letter is capital it will be a `cwd mark`, otherwise a `local mark`. 
 
-At most you can have `cwd.marks_key_seq` letters in the mark (including the first one). 
+At most you can have `cwd.key_length` letters in the mark (including the first one). 
 
 1. If you exhaust your max number of letters the mark will be set.
 2. If you don't want to use all the allowed letters for the mark you can hit `` ` `` (default config) to mark the file with the current provided letters for the mark.
@@ -28,8 +28,9 @@ Supported letters for the mark are `[a-zA-Z]` only the case of the first letter 
     :MarksCwdAll                  - to check all cwd marks for all directories
     :MarksCwdDelete [mark]        - to delete the mark
 
-    :MarksSetMaxKeySeq cwd [num]  - to set the max number of letters for cwd marks 
-                                    (is not persited between sessions)
+    :MarksKeyLength               - shows the max number of letters for cwd, local and tab marks 
+    :MarksKeyLength cwd [num]     - to set the max number of letters for cwd marks 
+                                    (it is not persited between sessions use the config for that)
     
 
 ## Relevant Example of Use 
@@ -74,14 +75,14 @@ Lazy.nvim
             -- this is the default configurations for setup function
             data_dir = vim.fn.glob("~/.cache/nvim/"), -- Here extended-marks dir will be created to store data
             locaL = { -- don't confuse with 'local'
-                max_key_seq = 1,            -- valid from 1 to 30
+                key_length = 1,             -- valid from 1 to 30
                 sign_column = 1,            -- 0 for no, 1 or 2 for number of characters 
             },
             cwd = {
-                max_key_seq = 4,
+                key_length = 4,
             },
             tab = {
-                max_key_seq = 1,
+                key_length = 1,
             },
         })
     end,

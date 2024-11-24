@@ -57,30 +57,41 @@ local marks_local_delete_completion = function(_, _, _)
     return mark_keys
 end
 
-local function set_max_seq(args)
+local function set_key_length(args)
     assert(type(args) == "table", "args shoulbe be of a type table")
+
+    if args[1] == nil then
+        local module_key_length = {
+            cwd_marks = cwd_marks.get_key_length(),
+            local_marks = local_marks.get_key_length(),
+            tab_marks = tab_marks.get_key_length(),
+        }
+        vim.api.nvim_echo({ { vim.inspect(module_key_length) } },
+            false, { verbose = false })
+        return
+    end
     assert(args[1] ~= nil and args[2] ~= nil,
-        "args should contain 'module'(cwd|local|tab) and 'max key sequence'")
+        "args should contain 'module'(cwd|local|tab) and 'key length'")
     assert(type(args[1]) == "string" and (args[1] == 'cwd' or args[1] == 'local' or args[1] == 'tab'),
         "first argumet should be a string and equal to 'cwd', 'local', or 'tab'")
     assert(tonumber(args[2]), "the second argument shoulbe be a number")
 
     local module = args[1]
-    local max_key_seq = tonumber(args[2])
+    local key_length = tonumber(args[2])
 
-    assert(max_key_seq > 0 and max_key_seq < 30,
-        "max_key_seq should be more than zero and less than 30. "
-        .. "Current value is " .. max_key_seq)
+    assert(key_length > 0 and key_length < 30,
+        "key length should be more than zero and less than 30. "
+        .. "Current value is " .. key_length)
 
     if module == 'cwd' then
-        cwd_marks.set_options({ max_key_seq = max_key_seq })
-        print("MarksCwd: set max_key_seq to: " .. max_key_seq)
+        cwd_marks.set_options({ key_length = key_length })
+        print("MarksCwd: set key_length to: " .. key_length)
     elseif module == 'local' then
-        local_marks.set_options({ max_key_seq = max_key_seq })
-        print("MarksLocal: set max_key_seq to: " .. max_key_seq)
+        local_marks.set_options({ key_length = key_length })
+        print("MarksLocal: set key_length to: " .. key_length)
     elseif module == 'tab' then
-        tab_marks.set_options({ max_key_seq = max_key_seq })
-        print("MarksTab: set max_key_seq to: " .. max_key_seq)
+        tab_marks.set_options({ key_length = key_length })
+        print("MarksTab: set key_length to: " .. key_length)
     end
 end
 
@@ -113,11 +124,11 @@ vim.api.nvim_create_user_command("MarksTab", function()
     { desc = "Lists tab marks" })
 
 
-vim.api.nvim_create_user_command("MarksSetMaxKeySeq",
-    function(opts) set_max_seq(opts.fargs) end,
+vim.api.nvim_create_user_command("MarksKeyLength",
+    function(opts) set_key_length(opts.fargs) end,
     {
         desc = "Sets a max sequens of characters of the mark-key for a specific module",
-        nargs = "+",
+        nargs = "*",
         complete = function(_, b, _)
             return b:match('cwd') or b:match('local') or b:match('tab')
                 and {} or { "cwd", "local", "tab" }

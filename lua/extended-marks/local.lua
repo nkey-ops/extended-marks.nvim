@@ -3,7 +3,7 @@ local utils = require('extended-marks.utils')
 --[[
     local_marks file structure
     "buffer path i.e file path": {  -- TODO it's an object for some reason should be an array
-        "mark_key with form [a-z]{1,max_key_seq}":  [ -- TODO it's an array for some reason should be an object
+        "mark_key with form [a-z]{1,key_length}  [ -- TODO it's an array for some reason should be an object
             number: id of the mark in the namespace,
             number: line number (zero based, api-indexing),
             number: column number (zero based, api-indexing)
@@ -15,7 +15,7 @@ local locaL = {}
 local Opts = {
     data_file = vim.fn.glob("~/.cache/nvim/extended-marks") .. "/local_marks.json",
     namespace = vim.api.nvim_create_namespace("local_marks"),
-    max_key_seq = 1,
+    key_length = 1,
     sign_column = 1,
 }
 
@@ -23,7 +23,7 @@ locaL.Opts = Opts
 
 --- @class LocalOpts
 --- @field data_dir? string path to the data directory
---- @field max_key_seq? number max number of characters in the mark (1 to 30)
+--- @field key_length? number max number of characters in the mark (1 to 30)
 --- @field sign_column? number 0 for no, 1 or 2 for number of characters
 
 --- sets the options for the local module
@@ -32,12 +32,12 @@ function locaL.set_options(opts)
     assert(opts ~= nil, "Opts cannot be nil")
     assert(type(opts) == 'table', "Opts should be of a type  table")
 
-    if opts.max_key_seq then
-        local max_key_seq = opts.max_key_seq
-        assert(type(max_key_seq) == 'number', "max_key_seq should be of type number")
-        assert(max_key_seq > 0 and max_key_seq < 30,
-            "max_key_seq should be more than zero and less than 30. Current value is " .. max_key_seq)
-        Opts.max_key_seq = max_key_seq
+    if opts.key_length then
+        local key_length = opts.key_length
+        assert(type(key_length) == 'number', "key_lenth should be of type number")
+        assert(key_length > 0 and key_length < 30,
+            "key_length should be more than zero and less than 30. Current value is " .. key_length)
+        Opts.key_length = key_length
     end
 
     if opts.data_dir then
@@ -65,7 +65,7 @@ function locaL.set_local_mark(first_char)
     assert(first_char >= 65 and first_char <= 90 or first_char >= 97 and first_char <= 122,
         "First mark key character value should be [a-zA-Z]")
 
-    local mark_key = utils.get_mark_key(Opts.max_key_seq, first_char)
+    local mark_key = utils.get_mark_key(Opts.key_length, first_char)
     if (mark_key == nil) then return end
 
     local current_buffer_id = vim.api.nvim_get_current_buf()
@@ -114,7 +114,7 @@ function locaL.jump_to_local_mark(first_char)
         utils.get_json_decoded_data(
             Opts.data_file, local_buffer_name)[local_buffer_name]
 
-    local mark_key = utils.get_mark_key(Opts.max_key_seq, first_char)
+    local mark_key = utils.get_mark_key(Opts.key_length, first_char)
 
     -- the remaining mark_key wasn't found(it was miss-typed apparently) just ignore the jump
     if mark_key == nil or local_marks[mark_key] == nil then return end
@@ -198,18 +198,6 @@ function locaL.delete_all_marks()
 
     local_marks[local_buffer_name] = nil
     utils.write_marks(Opts.data_file, local_marks)
-end
-
-function locaL.set_max_seq_local_mark(max_seq)
-    assert(max_seq ~= nil)
-
-    if (type(max_seq) == "string") then
-        max_seq = tonumber(max_seq)
-    end
-
-    assert(type(max_seq) == "number" and max_seq > 0 and max_seq < 50)
-
-    Opts.max_key_seq = max_seq
 end
 
 -- Updates marks from the namespace to the data file
@@ -319,6 +307,10 @@ function locaL.restore()
     if was_mark_removed then
         utils.write_marks(Opts.data_file, buffers)
     end
+end
+
+function locaL.get_key_length()
+    return Opts.key_length
 end
 
 function locaL.space()

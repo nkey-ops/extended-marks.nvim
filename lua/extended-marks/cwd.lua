@@ -3,13 +3,13 @@ local utils = require('extended-marks.utils')
 local cwd = {}
 local Opts = {
     data_file = vim.fn.glob("~/.local/share/nvim/extended-marks") .. "/cwd_marks.json",
-    max_key_seq = 5,
+    key_length = 5,
 }
 cwd.Opts = Opts
 
 --- @class Opts
 --- @field data_dir? string path to the data directory
---- @field max_key_seq? number max number of characters in the mark (1 to 30)
+--- @field key_length? number max number of characters in the mark (1 to 30)
 
 --- sets the options for the cwd module
 --- @param opts Opts
@@ -17,12 +17,12 @@ function cwd.set_options(opts)
     assert(opts ~= nil, "Opts cannot be nil")
     assert(type(opts) == 'table', "Opts should be of a type  table")
 
-    if opts.max_key_seq then
-        local max_key_seq = opts.max_key_seq
-        assert(type(max_key_seq) == 'number', "max_key_seq should be of type number")
-        assert(max_key_seq > 0 and max_key_seq < 30,
-            "max_key_seq should be more than zero and less than 30. Current value is " .. max_key_seq)
-        Opts.max_key_seq = max_key_seq
+    if opts.key_length then
+        local key_length = opts.key_length
+        assert(type(key_length) == 'number', "key_length should be of type number")
+        assert(key_length > 0 and key_length < 30,
+            "key_length should be more than zero and less than 30. Current value is " .. key_length)
+        Opts.key_length = key_length
     end
 
     if opts.data_dir then
@@ -35,7 +35,7 @@ function cwd.set_options(opts)
 end
 
 function cwd.set_cwd_mark(first_char)
-    local mark_key = utils.get_mark_key(Opts.max_key_seq, first_char)
+    local mark_key = utils.get_mark_key(Opts.key_length, first_char)
     if (mark_key == nil) then return end
 
     local working_dir = vim.fn.getcwd()
@@ -50,7 +50,7 @@ end
 
 ---Jumps to the cwd mark (i.e. buffer if possible) using first_char as the
 ---first character of the mark key and requesting from the client more characters
----to input as long as 'max_key_seq' allows to create a complete mark key.
+---to input as long as 'key_length' allows to create a complete mark key.
 ---The mark key is used to locate the file attached to it and if it is present
 ---the buffer will be opened using the located file in the current window
 ---otherwise nothing will happen
@@ -66,7 +66,7 @@ function cwd.jump_to_cwd_mark(first_char)
     local working_dir = vim.fn.getcwd()
     local marks = utils.get_json_decoded_data(Opts.data_file, working_dir)
 
-    local mark_key = utils.get_mark_key(Opts.max_key_seq, first_char)
+    local mark_key = utils.get_mark_key(Opts.key_length, first_char)
 
     if mark_key == nil then return end
 
@@ -154,6 +154,10 @@ function cwd.delete_cwd_mark(mark_key)
     utils.write_marks(Opts.data_file, data)
 
     print("MarksCwd:[" .. mark_key .. "] was removed")
+end
+
+function cwd.get_key_length()
+    return Opts.key_length
 end
 
 return cwd
