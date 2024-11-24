@@ -16,11 +16,11 @@ Hit `m` (default config) to start writing a first letter of the mark.  If the fi
 
 At most you can have `cwd.key_length` letters in the mark (including the first one). 
 
-1. If you exhaust your max number of letters the mark will be set.
-2. If you don't want to use all the allowed letters for the mark you can hit `` ` `` (default config) to mark the file with the current provided letters for the mark.
-3. If you want to interrupt marking process, hit any key apart from `` ` `` and `[a-zA-Z]`
+1. If you exhaust your max number of letters, the mark will be set.
+2. If you don't want to use all the allowed letters for the mark, you can hit `` ` `` (default config) to mark the file with the currently provided set letters.
+3. If you want to interrupt marking process, hit any key except for `` ` `` and `[a-zA-Z]`
 
-In order to open the file under a certain mark you should hit `` ` `` and then `[A-Z][a-z]*`: first uppercase letter to use a `cwd mark` and then, if your mark has more then one letter, the remaining ones.
+In order to open the file under a certain mark you should hit `` ` `` and then `[A-Z][a-zA-Z]*`: first uppercase letter to use a `cwd mark` and then, if your mark has more then one letter, the remaining ones.
 
 Supported letters for the mark are `[a-zA-Z]` only the case of the first letter of the mark is important.
 
@@ -47,7 +47,7 @@ Here is an example of the modular project directory tree:
 
 When neovim is opened at the path of the root directory the result of the call `:pwd`  (see `:h pwd`) will look like this `/your-path-to-root-directory/root`. Now every file we mark will be accessible only in case if our current working directory (cwd) is equal to that path.
 
-If we open the pom file at `root/pom.xml` and hit `mP` (default config) the file is marked with the `P` letter. You will see a message like this `MarksCwd:[P] /your-path-to-root-directory/root/pom.xml`. Now from any point of neovim (if the cwd is the same) we can open this file by hitting `` `P` ``. 
+If we open the pom file at `root/pom.xml` and hit `` mP` `` (default config) the file is marked with the `P` letter. You will see a message like this `MarksCwd:[P] /your-path-to-root-directory/root/pom.xml`. Now from any point of neovim (if the cwd is the same) we can open this file by hitting `` `P` `` (backtick, letter P, backtick). 
 
 To see the list of all the marks set for this current working directory call `:MarksCwd`
 
