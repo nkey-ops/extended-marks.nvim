@@ -50,8 +50,8 @@ function locaL.set_options(opts)
 
     if opts.sign_column then
         local sign_column = opts.sign_column
-        assert(type(sign_column) == 'number', "sing_text should be of type number")
-        assert(sign_column >= 0 and sign_column <= 2, "sing_text can only have values 0, 1 and 2")
+        assert(type(sign_column) == 'number', "sign_column should be of type number")
+        assert(sign_column >= 0 and sign_column <= 2, "sing_column can only have values 0, 1 and 2")
         Opts.sign_column = sign_column
     end
 end

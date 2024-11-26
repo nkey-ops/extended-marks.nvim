@@ -74,14 +74,14 @@ Lazy.nvim
         require('extended-marks').setup({
             -- this is the default configurations for setup function
             data_dir = vim.fn.glob("~/.cache/nvim/"), -- Here extended-marks dir will be created to store data
-            locaL = { -- don't confuse with 'local'
+            Local = {
                 key_length = 1,             -- valid from 1 to 30
-                sign_column = 1,            -- 0 for no, 1 or 2 for number of characters 
+                sign_column = 1,            -- 0 for no, 1 or 2 for number of characters
             },
-            cwd = {
+            Cwd = {
                 key_length = 4,
             },
-            tab = {
+            Tab = {
                 key_length = 1,
             },
         })

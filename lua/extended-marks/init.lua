@@ -6,14 +6,14 @@ local utils = require('extended-marks.utils')
 local M = {}
 local Opts = {
     data_dir = vim.fn.glob("~/.cache/nvim/"), -- the path to data files
-    locaL = {
+    Local = {
         key_length = 1,                       -- valid from 1 to 30, max length of the mark
         sign_column = 1,                      -- 0 for no, 1 or 2 for number of characters
     },
-    cwd = {
+    Cwd = {
         key_length = 4,
     },
-    tab = {
+    Tab = {
         key_length = 1,
     },
 }
@@ -39,19 +39,19 @@ M.setup = function(opts)
         utils.validate_dir(opts.data_dir)
     end
 
-    if opts.cwd then
-        opts.cwd.data_dir = opts.data_dir
-        cwd_marks.set_options(opts.cwd)
+    if opts.Cwd then
+        opts.Cwd.data_dir = opts.data_dir
+        cwd_marks.set_options(opts.Cwd)
     end
 
-    if opts.locaL then
-        opts.locaL.data_dir = opts.data_dir
-        local_marks.set_options(opts.locaL)
+    if opts.Local then
+        opts.Local.data_dir = opts.data_dir
+        local_marks.set_options(opts.Local)
     end
 
-    if opts.tab then
-        opts.tab.data_dir = opts.data_dir
-        tab_marks.set_options(opts.tab)
+    if opts.Tab then
+        opts.Tab.data_dir = opts.data_dir
+        tab_marks.set_options(opts.Tab)
     end
 
     require("extended-marks.config")
