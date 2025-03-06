@@ -43,9 +43,12 @@ function locaL.set_options(opts)
     if opts.data_dir then
         local data_dir = opts.data_dir
         assert(type(data_dir) == 'string', "data_dir should be of type string")
-        assert(utils.try_create_file(data_dir .. '/local_marks.json'),
-            "Couldn't create or use data file 'local_marks.json' with provided dir: " .. data_dir)
-        Opts.data_file = data_dir .. "/local_marks.json"
+
+        Opts.data_file = data_dir:gsub('/$', '') .. "/local_marks.json"
+    end
+
+    if not io.open(Opts.data_file, 'r') then
+        assert(io.open(Opts.data_file, 'w')):close()
     end
 
     if opts.sign_column then
@@ -165,7 +168,7 @@ end
 ---@param mark_key string of the mark to be deleted from the current buffer
 function locaL.delete_mark(mark_key)
     assert(mark_key ~= nil, "mark_key cannot be nil")
-    assert(type(mark_key) == "string", "mark_key should be of type strin")
+    assert(type(mark_key) == "string", "mark_key should be of type string")
     assert(string.len(mark_key) < 10, "mark_key is too long")
 
     local current_buffer_name = vim.api.nvim_buf_get_name(0)

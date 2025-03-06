@@ -19,25 +19,14 @@ local Opts = {
 }
 
 M.setup = function(opts)
-    if not opts or next(opts) == nil then
+    if not opts then
         opts = Opts
     else
+        assert(type(opts) == 'table', "opts should be of a type table")
         opts = vim.tbl_extend("force", Opts, opts)
     end
 
-    assert(type(opts) == 'table', "Opts should be of a type table")
-
-    if opts.data_dir then
-        utils.validate_dir(opts.data_dir)
-        opts.data_dir = opts.data_dir:gsub('/$', '')
-
-        opts.data_dir = opts.data_dir .. '/extended-marks'
-        if (vim.fn.isdirectory(opts.data_dir) == 0) then
-            os.execute("mkdir " .. opts.data_dir)
-        end
-
-        utils.validate_dir(opts.data_dir)
-    end
+    opts.data_dir = utils.handle_data_dir(opts.data_dir)
 
     if opts.Cwd then
         opts.Cwd.data_dir = opts.data_dir

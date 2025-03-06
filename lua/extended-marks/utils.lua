@@ -1,62 +1,24 @@
 local M = {}
 
---- Checks whether it's possible to write into the file,
---- if the file doesn't exist it is created
---- @return boolean, string?: true if it's possible to write into the file,
----                  false if otherwise, and error message
-function M.can_write_file(file_path)
-    assert(file_path ~= nil, "file_path cannot be nil")
-    assert(type(file_path) == "string", "file_path should be of type string")
-
-    local f, err = io.open(file_path, "a")
-
-    if f then
-        return true
-    end
-
-    return false, "Couldn't write into the file because: " .. err
-end
-
-function M.validate_dir(dir)
-    assert(dir ~= nil, "dir cannot be nil")
-    assert(type(dir) == "string", "dir should be of type string")
-
-    assert(vim.fn.isdirectory(dir) == 1,
-        string.format("Directory doesn't exist: '%s'", dir))
-
-    local tmp = dir:gsub('/$', '') .. '/tmp'
-    local can_write, err = M.can_write_file(tmp)
-
-    assert(can_write, string.format("%s: '%s'", err, dir))
-
-    os.remove(dir .. '/tmp')
-end
-
+--- @param file_path string:
 function M.get_data_file(file_path)
     assert(file_path ~= nil, "File path cannot be nil")
     assert(type(file_path) == "string", "File path should be of a type string")
 
-    local can_write, err = M.can_write_file(file_path)
-    assert(can_write, string.format("%s: '%s'", err, file_path))
+    local file = assert(io.open(file_path, "r"))
+    local read = assert(file:read("a"))
 
-    local file = io.open(file_path, "r")
-    assert(file ~= nil, "file cannot be nil")
-
-    local read = file:read()
-    if read == "" or read == nil then
+    if read == "" then
         file:close()
-
-        file = io.open(file_path, "w")
-        assert(file ~= nil, "file cannot be nil")
-
-        file:write("{}") -- creating intial JSON object
+        file = assert(io.open(file_path, "w"))
+        file:write("{}") -- creating initial JSON object
         file:close()
     end
 
-    return io.open(file_path, "r")
+    return assert(io.open(file_path, "r"))
 end
 
--- @working_dir optional
+--- @param working_dir string?:
 function M.get_json_decoded_data(file_path, working_dir)
     assert(file_path ~= nil, "File path cannot be nil")
     assert(type(file_path) == "string", "File path should be of a type string")
@@ -226,14 +188,29 @@ function M.copy_keys(table)
     return keys
 end
 
----@param  file_path string: file path to create the file at
----@return boolean: true whether the file was created or already exists,
----                 false if the file couldn't be created
-function M.try_create_file(file_path)
-    assert(file_path ~= nil, "file_path cannot be nil")
-    assert(type(file_path) == 'string', "file_path should be of type string")
+--- @param data_dir string: a path where '/extended-marks/' directory will be created,
+--- if the directory already exists or some of its sub-directories nothing will be done to them,
+--- otherwise sub-directories and/or the 'extended-marks' directory will be created as needed.
+--- The 'data_dir' can have expandable wildcards, expandable according to 'help:wildcards'
+--- @return string: an expanded path to '/extended-marks' directory
+function M.handle_data_dir(data_dir)
+    local data_dir_path = data_dir
 
-    return M.can_write_file(file_path)
+    assert(data_dir_path, "data_dir cannot be nil")
+    assert(type(data_dir_path) == 'string', "data_dir should be of a type string")
+
+    data_dir_path = vim.fn.expand(data_dir_path)
+    assert(data_dir_path:len() ~= 0,
+        string.format(
+            "data_dir:'%s' file wildcards cannot be expanded", data_dir))
+
+    data_dir_path = data_dir_path:gsub('/$', '') .. '/extended-marks'
+
+    -- the directory will exist but might not be readable or writable,
+    -- if the directory cannot be create an error is raised
+    -- sub-directories are created recursively as needed
+    vim.fn.mkdir(data_dir_path, 'p')
+    return data_dir_path
 end
 
 return M

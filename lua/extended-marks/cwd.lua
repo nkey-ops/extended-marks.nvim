@@ -2,7 +2,7 @@ local utils = require('extended-marks.utils')
 
 local cwd = {}
 local Opts = {
-    data_file = vim.fn.glob("~/.local/share/nvim/extended-marks") .. "/cwd_marks.json",
+    data_file = vim.fn.glob("~/.cache/nvim/extended-marks") .. "/cwd_marks.json",
     key_length = 5,
 }
 cwd.Opts = Opts
@@ -21,16 +21,20 @@ function cwd.set_options(opts)
         local key_length = opts.key_length
         assert(type(key_length) == 'number', "key_length should be of type number")
         assert(key_length > 0 and key_length < 30,
-            "key_length should be more than zero and less than 30. Current value is " .. key_length)
+            "key_length should be more than 0 and less than 30. Current value is " .. key_length)
+
         Opts.key_length = key_length
     end
 
     if opts.data_dir then
         local data_dir = opts.data_dir
         assert(type(data_dir) == 'string', "data_dir should be of type string")
-        assert(utils.try_create_file(data_dir .. '/cwd_marks.json'),
-            "Couldn't create or use data file 'cwd_marks.json' with provided dir: " .. data_dir)
-        Opts.data_file = data_dir .. "/cwd_marks.json"
+
+        Opts.data_file = data_dir:gsub('/$', '') .. '/cwd_marks.json'
+    end
+
+    if not io.open(Opts.data_file, 'r') then
+        assert(io.open(Opts.data_file, 'w')):close()
     end
 end
 
