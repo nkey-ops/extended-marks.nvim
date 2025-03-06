@@ -145,10 +145,15 @@ vim.api.nvim_create_autocmd({ "BufWrite" }, {
 
 vim.api.nvim_create_autocmd({ "BufNew" }, {
     nested = true,
-    callback = function()
+    callback = function(args)
         -- Uses nested autocmd because `vim.api.nvim_buf_line_count(args.buf)` would return zero
         vim.api.nvim_create_autocmd({ "BufEnter" }, {
             once = true,
+            -- Too many data files were opened on a big project that lead to major issues because
+            -- his event called not once but multiple times despite "once" property,
+            -- maybe a concurrency issue.
+            -- Linking this event to the buffer that created fixes it.
+            buffer = args.buf,
 
             callback = function()
                 local_marks.restore()
