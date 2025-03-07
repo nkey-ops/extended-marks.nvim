@@ -28,12 +28,14 @@ Supported letters for the mark are `[a-zA-Z]` only the case of the first letter 
     :MarksCwdAll                  - to check all cwd marks for all directories
     :MarksCwdDelete [mark]        - to delete the mark
 
-    :MarksKeyLength               - shows the max number of letters for cwd, local and tab marks 
-    :MarksKeyLength cwd [num]     - to set the max number of letters for cwd marks 
+    :MarksKeyLength               - shows the max number of letters for cwd, local and tab marks
+    :MarksKeyLength cwd [num]     - to set the max number of letters for cwd marks
                                     (it is not persited between sessions use the config for that)
-    
 
-## Relevant Example of Use 
+<details> 
+<summary><b> Example of use </b></summary>
+
+## Example of use 
 Here is an example of the modular project directory tree: 
 
      root ─┐
@@ -56,7 +58,7 @@ Because there are multiple `pom` files, we can  assign to them different mark-ke
 The solution is we can open neovim at the path of these module and make them a current directory or we can use tabs (see `:h tabs`). For example call `:tabe` and in a new tab set its cwd to (by default a new tab will have a cwd of the previous tab) using `:tcd auth-server` (see `:h tcd`). Now the call to `:pwd` shows something like `/your-path-to-root-directory/root/auth-server`
 
 We can create 4 tabs for `root`, `auth-server`, `client-server`, and `resource-server` directories and mark their `pom` files after we set the cwd accordingly, the hit to `` `P` `` will result in opening a `pom` file that is relevant to that current working directory. 
-
+</details>
 
 # Local Marks
 To be filled
@@ -66,26 +68,25 @@ To be filled
 
 # Configurations
 
-Lazy.nvim
+## Lazy.nvim
 ```lua
 {
     "nkey-ops/extended-marks.nvim",
-    config = function()
-        require('extended-marks').setup({
-            -- this is the default configurations for setup function
-            data_dir = vim.fn.glob("~/.cache/nvim/"), -- Here extended-marks dir will be created to store data
-            Local = {
-                key_length = 1,             -- valid from 1 to 30
-                sign_column = 1,            -- 0 for no, 1 or 2 for number of characters
-            },
-            Cwd = {
-                key_length = 4,
-            },
-            Tab = {
-                key_length = 1,
-            },
-        })
-    end,
+    opts =
+    {
+        -- this is the default configurations for setup function
+        data_dir = "~/.cache/nvim/", -- Here extended-marks directory will be created to store data
+        Local = {
+            key_length = 1,          -- valid from 1 to 30
+            sign_column = 1,         -- 0 for no, 1 or 2 for number of characters
+        },
+        Cwd = {
+            key_length = 4,
+        },
+        Tab = {
+            key_length = 1,
+        },
+    },
     init = function()
         -- keymaps should be defined by you, they are not set by default
         local marks = require('extended-marks')
@@ -95,4 +96,3 @@ Lazy.nvim
         vim.keymap.set("n", "'", marks.jump_to_tab_mark)
     end,
 },
-```
