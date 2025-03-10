@@ -74,10 +74,11 @@ local function set_key_length(args)
         "args should contain 'module'(cwd|local|tab) and 'key length'")
     assert(type(args[1]) == "string" and (args[1] == 'cwd' or args[1] == 'local' or args[1] == 'tab'),
         "first argumet should be a string and equal to 'cwd', 'local', or 'tab'")
-    assert(tonumber(args[2]), "the second argument shoulbe be a number")
+    assert(tonumber(args[2]), "the second argument should be be a number")
 
     local module = args[1]
-    local key_length = tonumber(args[2])
+    local key_length = assert(tonumber(args[2]),
+        "couldn't parse the second argument " .. args[2])
 
     assert(key_length > 0 and key_length < 30,
         "key length should be more than zero and less than 30. "
@@ -118,12 +119,41 @@ vim.api.nvim_create_user_command("MarksLocalDeleteAll", function()
     end,
     { desc = "Deletes all the local marks for the current buffer" })
 
+
+-- TAB MARKS
+
+local marks_tab_delete_completion = function(_, _, _)
+    local marks = {}
+
+    local i = 1
+    for _, tab_id in pairs(vim.api.nvim_list_tabpages()) do
+        local mark_key = vim.t[tab_id]["mark_key"]
+        if mark_key then
+            assert(mark_key ~= nil)
+            marks[i] = mark_key
+            i = i + 1
+        end
+    end
+
+    table.sort(marks)
+
+    return marks
+end
+
+
 vim.api.nvim_create_user_command("MarksTab", function()
         tab_marks.show_tab_marks()
     end,
     { desc = "Lists tab marks" })
 
+vim.api.nvim_create_user_command("MarksTabDelete",
+    function(opts) tab_marks.delete_tab_mark(opts.args) end, {
+        nargs = 1,
+        complete = marks_tab_delete_completion,
+        desc = "Deletes a tab mark using the mark's key"
+    })
 
+-- OPTIONS
 vim.api.nvim_create_user_command("MarksKeyLength",
     function(opts) set_key_length(opts.fargs) end,
     {
