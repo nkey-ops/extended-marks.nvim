@@ -103,27 +103,24 @@ function M.get_mark_key(max_key_seq, first_char)
     local chars = string.char(first_char)
     if max_key_seq == 1 then return chars end
 
-    local char_counter = 1
-    while true do
+    for _ = 1, max_key_seq do
         local ch = vim.fn.getchar()
-        char_counter = char_counter + 1
 
-        -- If ch is not [a-zA-Z] and not a back tick stop markering
-        if ((type(ch) ~= "number" or ch < 65 or (ch > 90 and ch < 97)
-                or ch > 122) and ch ~= 96) then
+        if (type(ch) ~= "number") then
             return nil
         end
 
         -- 96 is a back tick sign "`"
         if (ch == 96) then
-            break
+            return chars
+        end
+
+        -- If ch is not [a-zA-Z]
+        if ((ch < 65) or (ch > 90 and ch < 97) or (ch > 122)) then
+            return nil
         end
 
         chars = chars .. string.char(ch)
-
-        if (char_counter == max_key_seq) then
-            break
-        end
     end
     return chars
 end
