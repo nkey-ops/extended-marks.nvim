@@ -77,8 +77,10 @@ At most you can have `Tab.key_length` letters in the mark.
 
 > In order to open a tab under a certain mark you should hit `` ` `` and then `[a-zA-Z]+`
 
-    :MarksTab       - to check all the tab marks
-    :MarksTabDelete - to delete tab mark by its key
+    :MarksTab                   - to check all the tab marks
+    :MarksTabDelete             - to delete tab mark by its key
+    :MarksKeyLength tab [num]   - to set the max number of letters for cwd marks 
+                                  (it is not persited between sessions use the config for that)
 
 # Configurations
 ## Lazy.nvim
