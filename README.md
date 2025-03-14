@@ -79,7 +79,7 @@ At most you can have `Tab.key_length` letters in the mark.
 
     :MarksTab                   - to check all the tab marks
     :MarksTabDelete             - to delete tab mark by its key
-    :MarksKeyLength tab [num]   - to set the max number of letters for cwd marks 
+    :MarksKeyLength tab [num]   - to set the max number of letters for tab marks 
                                   (it is not persited between sessions use the config for that)
 
 # Configurations
