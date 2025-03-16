@@ -8,8 +8,8 @@ local utils = require('extended-marks.utils')
 
 local tab = {}
 
---- @class TabOpts defines a set of options that allow configuring the tab module
---- @field key_length number max number of characters in the mark (1 to 30)
+--- @class TabOpts manages configuration of the tab module
+--- @field key_length number default:1 | max number of characters in the mark [1 to 30)
 local TabOpts = {
     key_length = 1,
 }
@@ -17,7 +17,10 @@ local TabOpts = {
 local mark_key_var_name = "mark_key"
 local api = vim.api
 
---- @param opts TabOpts
+--- @class TabSetOpts
+--- @field key_length? integer default:1 | max number of characters in the mark [1 to 30)
+
+--- @param opts TabSetOpts
 function tab.set_options(opts)
     assert(opts ~= nil, "opts cannot be nil")
     assert(type(opts) == 'table', "opts should be of a type table")

@@ -12,51 +12,58 @@ local utils = require('extended-marks.utils')
 --]]
 
 local locaL = {}
-local Opts = {
+
+--- @class LocalOpts manages configuration of the local module
+--- @field data_file string path to the data file
+--- @field namespace string namespace id where local marks will be stored
+--- @field key_length integer default:1 | max number of characters in the mark [1 to 30)
+--- @field sign_column 0|1|2 0 for no, 1 or 2 for number of characters
+local LocalOpts = {
     data_file = vim.fn.glob("~/.cache/nvim/extended-marks") .. "/local_marks.json",
     namespace = vim.api.nvim_create_namespace("local_marks"),
     key_length = 1,
     sign_column = 1,
 }
 
-locaL.Opts = Opts
+--- @class LocalSetOpts
+--- @field data_dir string a path to the data directory
+--- @field key_length? integer default:1 | max number of characters in the mark [1 to 30)
+--- @field sign_column 0|1|2|nil default:1 | 0 for no, 1 or 2 for number of characters
 
---- @class LocalOpts
---- @field data_dir? string path to the data directory
---- @field key_length? number max number of characters in the mark (1 to 30)
---- @field sign_column? number 0 for no, 1 or 2 for number of characters
-
---- sets the options for the local module
---- @param opts LocalOpts
+--- Sets the LocalOpts for the local module
+--- @param opts LocalSetOpts
 function locaL.set_options(opts)
-    assert(opts ~= nil, "Opts cannot be nil")
-    assert(type(opts) == 'table', "Opts should be of a type  table")
+    assert(opts ~= nil, "opts cannot be nil")
+    assert(type(opts) == 'table', "opts should be of a type  table")
+    assert(opts.data_dir, "opts.data_dir cannot be nil")
+    assert(type(opts.data_dir) == 'string', "opts.data_dir should be of type string")
+
+    LocalOpts.data_file = opts.data_dir:gsub('/$', '') .. "/local_marks.json"
+
+    if not io.open(LocalOpts.data_file, 'r') then
+        assert(io.open(LocalOpts.data_file, 'w')):close()
+    end
 
     if opts.key_length then
-        local key_length = opts.key_length
-        assert(type(key_length) == 'number', "key_lenth should be of type number")
-        assert(key_length > 0 and key_length < 30,
-            "key_length should be more than zero and less than 30. Current value is " .. key_length)
-        Opts.key_length = key_length
-    end
-
-    if opts.data_dir then
-        local data_dir = opts.data_dir
-        assert(type(data_dir) == 'string', "data_dir should be of type string")
-
-        Opts.data_file = data_dir:gsub('/$', '') .. "/local_marks.json"
-    end
-
-    if not io.open(Opts.data_file, 'r') then
-        assert(io.open(Opts.data_file, 'w')):close()
+        locaL.set_key_length(opts.key_length)
     end
 
     if opts.sign_column then
         local sign_column = opts.sign_column
         assert(type(sign_column) == 'number', "sign_column should be of type number")
         assert(sign_column >= 0 and sign_column <= 2, "sing_column can only have values 0, 1 and 2")
-        Opts.sign_column = sign_column
+        LocalOpts.sign_column = sign_column
     end
+end
+
+--- @param key_length integer max number of characters in the mark [1 to 30)
+function locaL.set_key_length(key_length)
+    assert(key_length, "key_length cannot be nil")
+    assert(type(key_length) == 'number', "key_length should be of type number")
+    assert(key_length > 0 and key_length < 30,
+        "key_length should be more than 0 and less than 30. Current value is " .. key_length)
+
+    LocalOpts.key_length = key_length
 end
 
 ---@param first_char number represents the first character of the mark that should be in between
@@ -68,18 +75,18 @@ function locaL.set_local_mark(first_char)
     assert(first_char >= 65 and first_char <= 90 or first_char >= 97 and first_char <= 122,
         "First mark key character value should be [a-zA-Z]")
 
-    local mark_key = utils.get_mark_key(Opts.key_length, first_char)
+    local mark_key = utils.get_mark_key(LocalOpts.key_length, first_char)
     if (mark_key == nil) then return end
 
     local current_buffer_id = vim.api.nvim_get_current_buf()
     local local_buffer_name = vim.api.nvim_buf_get_name(current_buffer_id)
-    local buffers = utils.get_json_decoded_data(Opts.data_file, local_buffer_name)
+    local buffers = utils.get_json_decoded_data(LocalOpts.data_file, local_buffer_name)
 
 
     -- set mark with one or two letters from the mark_key as a sign-column
     local extmark_opts = {}
-    if Opts.sign_column ~= 0 then
-        extmark_opts = { sign_text = string.sub(mark_key, 1, Opts.sign_column) }
+    if LocalOpts.sign_column ~= 0 then
+        extmark_opts = { sign_text = string.sub(mark_key, 1, LocalOpts.sign_column) }
     end
 
     -- add to extmark_opts an id of the mark in the name_space to edit it
@@ -96,11 +103,11 @@ function locaL.set_local_mark(first_char)
 
     -- place mark at the beginning of the line
     local mark_id = vim.api.nvim_buf_set_extmark(
-        current_buffer_id, Opts.namespace, pos[1], 0, extmark_opts)
+        current_buffer_id, LocalOpts.namespace, pos[1], 0, extmark_opts)
 
     buffers[local_buffer_name][mark_key] = { mark_id, pos[1], 0 }
 
-    utils.write_marks(Opts.data_file, buffers)
+    utils.write_marks(LocalOpts.data_file, buffers)
 
     print(
         string.format("MarksLocal:[%s:%s] \"%s\"", mark_key, pos[1] + 1, marked_line_string))
@@ -115,16 +122,16 @@ function locaL.jump_to_local_mark(first_char)
     local local_buffer_name = vim.api.nvim_buf_get_name(0)
     local local_marks =
         utils.get_json_decoded_data(
-            Opts.data_file, local_buffer_name)[local_buffer_name]
+            LocalOpts.data_file, local_buffer_name)[local_buffer_name]
 
-    local mark_key = utils.get_mark_key(Opts.key_length, first_char)
+    local mark_key = utils.get_mark_key(LocalOpts.key_length, first_char)
 
     -- the remaining mark_key wasn't found(it was miss-typed apparently) just ignore the jump
     if mark_key == nil or local_marks[mark_key] == nil then return end
     local mark_id = local_marks[mark_key][1]
 
     local position = vim.api.nvim_buf_get_extmark_by_id(
-        0, Opts.namespace, mark_id, {})
+        0, LocalOpts.namespace, mark_id, {})
 
     position[1] = position[1] + 1; -- api`s line and column position is (1,0) based
     vim.api.nvim_win_set_cursor(0, position)
@@ -134,14 +141,14 @@ function locaL.show_local_marks()
     local local_buffer_name = vim.api.nvim_buf_get_name(0)
     local current_buffer_id = vim.api.nvim_get_current_buf()
     local marks = utils.get_json_decoded_data(
-        Opts.data_file, local_buffer_name)[local_buffer_name]
+        LocalOpts.data_file, local_buffer_name)[local_buffer_name]
 
 
     table.sort(marks)
     for mark_key, mark in pairs(marks) do
         local pair =
             vim.api.nvim_buf_get_extmark_by_id(
-                current_buffer_id, Opts.namespace, mark[1], {})
+                current_buffer_id, LocalOpts.namespace, mark[1], {})
 
         assert(pair ~= nil and pair[1] ~= nil, string.format("Nil for [%s:%s]", mark_key, vim.inspect(mark)))
 
@@ -156,7 +163,7 @@ end
 
 -- Shows raw raw data for performance reasons
 function locaL.show_all_local_marks()
-    local marks = utils.get_json_decoded_data(Opts.data_file)
+    local marks = utils.get_json_decoded_data(LocalOpts.data_file)
 
     table.sort(marks)
 
@@ -172,7 +179,7 @@ function locaL.delete_mark(mark_key)
     assert(string.len(mark_key) < 10, "mark_key is too long")
 
     local current_buffer_name = vim.api.nvim_buf_get_name(0)
-    local marks = utils.get_json_decoded_data(Opts.data_file, current_buffer_name)
+    local marks = utils.get_json_decoded_data(LocalOpts.data_file, current_buffer_name)
 
     local mark = marks[current_buffer_name][mark_key]
     if (mark == nil) then
@@ -180,14 +187,14 @@ function locaL.delete_mark(mark_key)
         return
     end
 
-    vim.api.nvim_buf_del_extmark(0, Opts.namespace, mark[1])
+    vim.api.nvim_buf_del_extmark(0, LocalOpts.namespace, mark[1])
     marks[current_buffer_name][mark_key] = nil
 
     if next(marks[current_buffer_name]) == nil then
         marks[current_buffer_name] = nil
     end
 
-    utils.write_marks(Opts.data_file, marks)
+    utils.write_marks(LocalOpts.data_file, marks)
 
     print(string.format("MarksLocal:[%s:%s] was removed", mark_key, mark[2]))
 end
@@ -197,10 +204,10 @@ function locaL.delete_all_marks()
     local current_buffer_id = vim.api.nvim_get_current_buf()
     local local_buffer_name = vim.api.nvim_buf_get_name(current_buffer_id)
     local local_marks = utils.get_json_decoded_data(
-        Opts.data_file, local_buffer_name)
+        LocalOpts.data_file, local_buffer_name)
 
     local_marks[local_buffer_name] = nil
-    utils.write_marks(Opts.data_file, local_marks)
+    utils.write_marks(LocalOpts.data_file, local_marks)
 end
 
 -- Updates marks from the namespace to the data file
@@ -208,7 +215,7 @@ function locaL.update()
     local current_buffer_id = vim.api.nvim_get_current_buf()
     local local_buffer_name = vim.api.nvim_buf_get_name(current_buffer_id)
     local buffers           = utils.get_json_decoded_data(
-        Opts.data_file, local_buffer_name)
+        LocalOpts.data_file, local_buffer_name)
 
     for mark_key, mark in pairs(buffers[local_buffer_name]) do
         assert(mark_key ~= nil and mark ~= nil and
@@ -219,7 +226,7 @@ function locaL.update()
 
         local pair =
             vim.api.nvim_buf_get_extmark_by_id(
-                current_buffer_id, Opts.namespace, mark[1], {})
+                current_buffer_id, LocalOpts.namespace, mark[1], {})
 
         if (pair ~= nil and pair[1] ~= nil and pair[2] ~= nil) then
             buffers[local_buffer_name][mark_key] = { mark[1], pair[1], pair[2] }
@@ -232,7 +239,7 @@ function locaL.update()
     end
 
     if next(buffers[local_buffer_name]) ~= nil then
-        utils.write_marks(Opts.data_file, buffers)
+        utils.write_marks(LocalOpts.data_file, buffers)
     end
 end
 
@@ -245,12 +252,12 @@ function locaL.restore()
     local current_buffer_id = vim.api.nvim_get_current_buf()
     local local_buffer_name = vim.api.nvim_buf_get_name(current_buffer_id)
 
-    local buffers = utils.get_json_decoded_data(Opts.data_file, local_buffer_name)
+    local buffers = utils.get_json_decoded_data(LocalOpts.data_file, local_buffer_name)
     local local_marks = buffers[local_buffer_name]
 
     local namespace_marks =
         vim.api.nvim_buf_get_extmarks(
-            current_buffer_id, Opts.namespace, 0, -1, {})
+            current_buffer_id, LocalOpts.namespace, 0, -1, {})
     local max_lines = vim.api.nvim_buf_line_count(current_buffer_id)
 
     local was_mark_removed = false
@@ -290,12 +297,12 @@ function locaL.restore()
 
                 local opts = { id = s_mark[1] }
 
-                if Opts.sign_column ~= 0 then
-                    opts.sign_text = string.sub(s_mark_key, 1, Opts.sign_column)
+                if LocalOpts.sign_column ~= 0 then
+                    opts.sign_text = string.sub(s_mark_key, 1, LocalOpts.sign_column)
                 end
 
                 vim.api.nvim_buf_set_extmark(current_buffer_id,
-                    Opts.namespace, s_mark[2], s_mark[3], opts)
+                    LocalOpts.namespace, s_mark[2], s_mark[3], opts)
             else
                 print(string.format("MarksLocal: The mark was out of bounds: [%s:%s](zero-based) max lines %s",
                     s_mark_key, s_mark[2], max_lines))
@@ -308,16 +315,21 @@ function locaL.restore()
 
     -- removing invalid marks
     if was_mark_removed then
-        utils.write_marks(Opts.data_file, buffers)
+        utils.write_marks(LocalOpts.data_file, buffers)
     end
 end
 
 function locaL.get_key_length()
-    return Opts.key_length
+    return LocalOpts.key_length
 end
 
+--- testing
 function locaL.space()
-    print(vim.inspect(vim.api.nvim_buf_get_extmarks(0, Opts.namespace, 0, -1, {})))
+    print(vim.inspect(vim.api.nvim_buf_get_extmarks(0, LocalOpts.namespace, 0, -1, {})))
+end
+
+function locaL.get_marks()
+    return utils.get_json_decoded_data(LocalOpts.data_file)
 end
 
 return locaL

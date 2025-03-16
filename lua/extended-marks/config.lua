@@ -1,19 +1,21 @@
 local cwd_marks = require('extended-marks.cwd')
 local local_marks = require('extended-marks.local')
 local tab_marks = require('extended-marks.tab')
-local utils = require('extended-marks.utils')
 
 -- CWD MARKS
 local marks_cwd_delete_completion = function(_, _, _)
     local working_dir = vim.fn.getcwd()
-    local marks =
-        utils.get_json_decoded_data(cwd_marks.Opts.data_file)
+    local marks = cwd_marks.get_marks()[working_dir]
 
-    table.sort(marks[working_dir])
+    if not marks then
+        marks = {}
+    end
+
+    table.sort(marks)
 
     local mark_keys = {}
     local i = 1;
-    for key, _ in pairs(marks[working_dir]) do
+    for key, _ in pairs(marks) do
         mark_keys[i] = key
         i = i + 1
     end
@@ -41,15 +43,17 @@ vim.api.nvim_create_user_command("MarksCwdDelete",
 -- LOCAL MARKS
 local marks_local_delete_completion = function(_, _, _)
     local current_buffer = vim.api.nvim_buf_get_name(0)
-    local marks =
-        utils.get_json_decoded_data(
-            local_marks.Opts.data_file, current_buffer)
+    local marks = local_marks.get_marks()[current_buffer]
+
+    if not marks then
+        marks = {}
+    end
 
     table.sort(marks[current_buffer])
 
     local mark_keys = {}
     local i = 1;
-    for key, _ in pairs(marks[current_buffer]) do
+    for key, _ in pairs(marks) do
         mark_keys[i] = key
         i = i + 1
     end
@@ -85,10 +89,10 @@ local function set_key_length(args)
         .. "Current value is " .. key_length)
 
     if module == 'cwd' then
-        cwd_marks.set_options({ key_length = key_length })
+        cwd_marks.set_key_length(key_length)
         print("MarksCwd: set key_length to: " .. key_length)
     elseif module == 'local' then
-        local_marks.set_options({ key_length = key_length })
+        local_marks.set_key_length(key_length)
         print("MarksLocal: set key_length to: " .. key_length)
     elseif module == 'tab' then
         tab_marks.set_options({ key_length = key_length })

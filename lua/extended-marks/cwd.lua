@@ -1,54 +1,63 @@
 local utils = require('extended-marks.utils')
 
 local cwd = {}
-local Opts = {
+
+--- @class CwdOpts manages configuration of the cwd module
+--- @field data_file string path to the data directory
+--- @field key_length integer default:5 | max number of characters in the mark (1 to 30)
+local CwdOpts = {
     data_file = vim.fn.glob("~/.cache/nvim/extended-marks") .. "/cwd_marks.json",
     key_length = 5,
 }
-cwd.Opts = Opts
 
---- @class Opts
---- @field data_dir? string path to the data directory
---- @field key_length? number max number of characters in the mark (1 to 30)
+--- @class CwdSetOpts
+--- @field data_dir string a path to the data directory
+--- @field key_length integer? default:5 | max number of characters in the mark [1 to 30)
 
 --- sets the options for the cwd module
---- @param opts Opts
+--- @param opts CwdSetOpts
 function cwd.set_options(opts)
     assert(opts ~= nil, "Opts cannot be nil")
     assert(type(opts) == 'table', "Opts should be of a type  table")
+    assert(opts.data_dir, "opts.data_dir cannot be nil")
+    assert(type(opts.data_dir) == 'string', "data_dir should be of type string")
+
+    CwdOpts.data_file = opts.data_dir:gsub('/$', '') .. '/cwd_marks.json'
+
+    if not io.open(CwdOpts.data_file, 'r') then
+        assert(io.open(CwdOpts.data_file, 'w')):close()
+    end
 
     if opts.key_length then
-        local key_length = opts.key_length
-        assert(type(key_length) == 'number', "key_length should be of type number")
-        assert(key_length > 0 and key_length < 30,
-            "key_length should be more than 0 and less than 30. Current value is " .. key_length)
-
-        Opts.key_length = key_length
-    end
-
-    if opts.data_dir then
-        local data_dir = opts.data_dir
-        assert(type(data_dir) == 'string', "data_dir should be of type string")
-
-        Opts.data_file = data_dir:gsub('/$', '') .. '/cwd_marks.json'
-    end
-
-    if not io.open(Opts.data_file, 'r') then
-        assert(io.open(Opts.data_file, 'w')):close()
+        cwd.set_key_length(opts.key_length)
     end
 end
 
+--- @param key_length integer max number of characters in the mark [1 to 30)
+function cwd.set_key_length(key_length)
+    assert(key_length, "key_length cannot be nil")
+    assert(type(key_length) == 'number', "key_length should be of type number")
+    assert(key_length > 0 and key_length < 30,
+        "key_length should be more than 0 and less than 30. Current value is " .. key_length)
+
+    CwdOpts.key_length = key_length
+end
+
+function cwd.get_key_length()
+    return CwdOpts.key_length
+end
+
 function cwd.set_cwd_mark(first_char)
-    local mark_key = utils.get_mark_key(Opts.key_length, first_char)
+    local mark_key = utils.get_mark_key(CwdOpts.key_length, first_char)
     if (mark_key == nil) then return end
 
     local working_dir = vim.fn.getcwd()
     local marked_file = vim.api.nvim_buf_get_name(0)
-    local data = utils.get_json_decoded_data(Opts.data_file, working_dir)
+    local data = utils.get_json_decoded_data(CwdOpts.data_file, working_dir)
 
     data[working_dir][mark_key] = marked_file
 
-    utils.write_marks(Opts.data_file, data)
+    utils.write_marks(CwdOpts.data_file, data)
     print("MarksCwd:[" .. mark_key .. "]", marked_file)
 end
 
@@ -68,9 +77,9 @@ function cwd.jump_to_cwd_mark(first_char)
         "First mark key character value should be [a-zA-Z]")
 
     local working_dir = vim.fn.getcwd()
-    local marks = utils.get_json_decoded_data(Opts.data_file, working_dir)
+    local marks = utils.get_json_decoded_data(CwdOpts.data_file, working_dir)
 
-    local mark_key = utils.get_mark_key(Opts.key_length, first_char)
+    local mark_key = utils.get_mark_key(CwdOpts.key_length, first_char)
 
     if mark_key == nil then return end
 
@@ -113,7 +122,7 @@ end
 function cwd.show_cwd_marks()
     local working_dir = vim.fn.getcwd()
     local marks = utils.get_json_decoded_data(
-        Opts.data_file, working_dir)[working_dir]
+        CwdOpts.data_file, working_dir)[working_dir]
 
     table.sort(marks)
     vim.api.nvim_echo({ { vim.inspect(marks) } },
@@ -122,7 +131,7 @@ end
 
 --- displays a list of all cwd marks and their related current working directories (cwd)
 function cwd.show_all_cwd_marks()
-    local marks = utils.get_json_decoded_data(Opts.data_file)
+    local marks = utils.get_json_decoded_data(CwdOpts.data_file)
     table.sort(marks)
 
     vim.api.nvim_echo({ { vim.inspect(marks) } },
@@ -136,7 +145,7 @@ function cwd.delete_cwd_mark(mark_key)
     assert(string.len(mark_key) < 10, "mark_key is too long")
 
     local working_dir = vim.fn.getcwd()
-    local data = utils.get_json_decoded_data(Opts.data_file)
+    local data = utils.get_json_decoded_data(CwdOpts.data_file)
 
     if data[working_dir] == nil then
         data[working_dir] = {}
@@ -155,13 +164,13 @@ function cwd.delete_cwd_mark(mark_key)
         data[working_dir] = nil
     end
 
-    utils.write_marks(Opts.data_file, data)
+    utils.write_marks(CwdOpts.data_file, data)
 
     print("MarksCwd:[" .. mark_key .. "] was removed")
 end
 
-function cwd.get_key_length()
-    return Opts.key_length
+function cwd.get_marks()
+    return utils.get_json_decoded_data(CwdOpts.data_file)
 end
 
 return cwd

@@ -4,20 +4,45 @@ local tab_marks = require('extended-marks.tab')
 local utils = require('extended-marks.utils')
 
 local M = {}
-local Opts = {
-    data_dir = vim.fn.glob("~/.cache/nvim/"), -- the path to data files
-    Local = {
-        key_length = 1,                       -- valid from 1 to 30, max length of the mark
-        sign_column = 1,                      -- 0 for no, 1 or 2 for number of characters
-    },
-    Cwd = {
-        key_length = 4,
-    },
-    Tab = {
-        key_length = 1,
-    },
+
+
+--- @class PubCwdOpts allows external code to manage some configurations of
+---                   the cwd module
+--- @field key_length integer? default:1 | max number of characters in the mark [1 to 30)
+local PubCwdOpts = {
+    key_length = 1
 }
 
+--- @class PubLocalOpts allows external code to manage some configurations of
+---                     the local module
+--- @field key_length integer? default:1 | max number of characters in the mark [1 to 30)
+--- @field sign_column 0|1|2|nil default:1 | 0 for no, 1 or 2 for number of characters
+local PubLocalOpts = {
+    key_length = 1,
+    sign_column = 1,
+}
+
+--- @class PubTabOpts allows external code to manage some configurations of
+---                   the tab module
+--- @field key_length integer? default:1 | max number of characters in the mark [1 to 30)
+local PubTabOpts = {
+    key_length = 1,
+}
+
+--- @class Opts configurations for extended-marks
+--- @field data_dir string? directory where "extended-marks" directory
+---                         will be created and store all the data
+--- @field Cwd PubCwdOpts? options that cofigure the cwd module
+--- @field Local PubLocalOpts? options that cofigure the local module
+--- @field Tab PubTabOpts? options that cofigure the tab module
+local Opts = {
+    data_dir = vim.fn.glob("~/.cache/nvim/"), -- the path to data files
+    Cwd = PubCwdOpts,
+    Local = PubLocalOpts,
+    Tab = PubTabOpts,
+}
+
+--- @param opts Opts?;
 M.setup = function(opts)
     if not opts then
         opts = Opts
@@ -29,18 +54,32 @@ M.setup = function(opts)
     opts.data_dir = utils.handle_data_dir(opts.data_dir)
 
     if opts.Cwd then
-        opts.Cwd.data_dir = opts.data_dir
-        cwd_marks.set_options(opts.Cwd)
+        --- @type CwdSetOpts
+        local CwdSetOpts = {
+            data_dir = opts.data_dir,
+            key_length = opts.Cwd.key_length,
+        }
+
+        cwd_marks.set_options(CwdSetOpts)
     end
 
     if opts.Local then
-        opts.Local.data_dir = opts.data_dir
-        local_marks.set_options(opts.Local)
+        --- @type LocalSetOpts
+        local LocalSetOpts = {
+            data_dir = opts.data_dir,
+            key_length = opts.Local.key_length,
+            sign_column = opts.Local.sign_column
+        }
+
+        local_marks.set_options(LocalSetOpts)
     end
 
     if opts.Tab then
-        opts.Tab.data_dir = opts.data_dir
-        tab_marks.set_options(opts.Tab)
+        --- @type TabSetOpts
+        local TabSetOpts = {
+            key_length = opts.Tab.key_length
+        }
+        tab_marks.set_options(TabSetOpts)
     end
 
     require("extended-marks.config")
@@ -52,6 +91,7 @@ M.set_mark = function()
     if (type(ch) == 'string') then
         return
     end
+
     assert(type(ch) == 'number')
 
     if (ch >= 97 and ch <= 122) then  --[a-z]
