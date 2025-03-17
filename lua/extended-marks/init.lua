@@ -85,7 +85,15 @@ M.setup = function(opts)
     require("extended-marks.config")
 end
 
-M.set_mark = function()
+--- Waits for [a-zA-Z] keys until max number letters was exceeded.
+--- If other key is pressed, silently exits, or if '`' backtick is pressed,
+--- creates a mark with the current letters.
+--- If a first letter is uppercase [A-Z], a cwd mark will be created
+--- If a first letter is lowercase [a-z], a local mark will be created
+--- Only Opts.Cwd.key_length number of letters is available for cwd marks
+--- Only Opts.Local.key_length number of letters is available for local marks
+--- After last letter was used, a mark will be set
+M.set_cwd_or_local_mark = function()
     local ch = vim.fn.getchar()
 
     if (type(ch) == 'string') then
@@ -101,7 +109,16 @@ M.set_mark = function()
     end
 end
 
-M.jump_to_mark = function()
+--- Waits for [a-zA-Z] keys until max number letters was exceeded.
+--- If other key is pressed, silently exits,
+--- or if '`' backtick is pressed, jumps to a mark that has a key equal the current letters,
+--- if not found, silently exist.
+--- If a first letter is uppercase [A-Z], a cwd mark will be jumped to
+--- If a first letter is lowercase [a-z], a local mark will be jumped to
+--- Only Opts.Cwd.key_length number of letters is available for cwd marks
+--- Only Opts.Local.key_length number of letters is available for local marks
+--- After last letter was used, a jump will be made
+M.jump_to_cwd_or_local_mark = function()
     local ch = vim.fn.getchar()
 
     if (type(ch) == 'string') then
@@ -140,8 +157,15 @@ M.jump_to_mark = function()
     end
 end
 
-
-M.set_tab_mark = function()
+--- Waits for [a-zA-Z] keys until max number letters was exceeded.
+--- If other key is pressed, silently exits, or if '`' backtick is pressed,
+--- creates a mark with the current letters.
+--- If a first letter is uppercase [A-Z], a global mark will be created
+--- If a first letter is lowercase [a-z], a tab mark will be created
+--- Only Opts.Glob.key_length number of letters is available for global marks
+--- Only Opts.Tab.key_length number of letters is available for tab marks
+--- After last letter was used, a mark will be set
+M.set_global_or_tab_mark = function()
     local ch = vim.fn.getchar()
 
     if (type(ch) == 'string') then
@@ -154,7 +178,16 @@ M.set_tab_mark = function()
     end
 end
 
-M.jump_to_tab_mark = function()
+--- Waits for [a-zA-Z] keys until max number letters was exceeded.
+--- If other key is pressed, silently exits,
+--- or if '`' backtick is pressed, jumps to a mark that has a key equal the current letters,
+--- if not found, silently exist.
+--- If a first letter is uppercase [A-Z], a global mark will be jumped to
+--- If a first letter is lowercase [a-z], a tab mark will be jumped to
+--- Only Opts.Glob.key_length number of letters is available for global marks
+--- Only Opts.Tab.key_length number of letters is available for tab marks
+--- After last letter was used, a jump will be made
+M.jump_to_global_or_tab_mark = function()
     local ch = vim.fn.getchar()
 
     if (type(ch) == 'string') then

@@ -105,9 +105,9 @@ At most you can have `Tab.key_length` letters in the mark.
     init = function()
         -- keymaps should be defined by you, they are not set by default
         local marks = require('extended-marks')
-        vim.keymap.set("n", "m", marks.set_mark)
-        vim.keymap.set("n", "`", marks.jump_to_mark)
-        vim.keymap.set("n", "M", marks.set_tab_mark)
-        vim.keymap.set("n", "'", marks.jump_to_tab_mark)
+        vim.keymap.set("n", "m", marks.set_cwd_or_local_mark)
+        vim.keymap.set("n", "`", marks.jump_to_cwd_or_local_mark)
+        vim.keymap.set("n", "M", marks.set_global_or_tab_mark)
+        vim.keymap.set("n", "'", marks.jump_to_global_or_tab_mark)
     end,
 },
