@@ -29,7 +29,7 @@ local PubTabOpts = {
     key_length = 1,
 }
 
---- @class Opts configurations for extended-marks
+--- @class ExtendedMarksOpts configurations for extended-marks
 --- @field data_dir string? directory where "extended-marks" directory
 ---                         will be created and store all the data
 --- @field Cwd PubCwdOpts? options that cofigure the cwd module
@@ -42,7 +42,7 @@ local Opts = {
     Tab = PubTabOpts,
 }
 
---- @param opts Opts?;
+--- @param opts ExtendedMarksOpts?;
 M.setup = function(opts)
     if not opts then
         opts = Opts
