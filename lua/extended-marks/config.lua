@@ -1,6 +1,35 @@
+local global_marks = require('extended-marks.global')
 local cwd_marks = require('extended-marks.cwd')
 local local_marks = require('extended-marks.local')
 local tab_marks = require('extended-marks.tab')
+
+-- GLOBAL MARKS
+local marks_global_delete_completion = function(_, _, _)
+    local marks = global_marks.get_marks()
+
+    table.sort(marks)
+
+    local mark_keys = {}
+    local i = 1;
+    for key, _ in pairs(marks) do
+        mark_keys[i] = key
+        i = i + 1
+    end
+
+    return mark_keys
+end
+
+vim.api.nvim_create_user_command("MarksGlobal", function()
+        global_marks.show_marks()
+    end,
+    { desc = "Lists global marked files" })
+
+vim.api.nvim_create_user_command("MarksGlobalDelete",
+    function(opts) global_marks.delete_mark(opts.args) end, {
+        nargs = 1,
+        complete = marks_global_delete_completion,
+        desc = "Deletes a global mark using the mark's key"
+    })
 
 -- CWD MARKS
 local marks_cwd_delete_completion = function(_, _, _)
@@ -66,6 +95,7 @@ local function set_key_length(args)
 
     if args[1] == nil then
         local module_key_length = {
+            global_marks = global_marks.get_key_length(),
             cwd_marks = cwd_marks.get_key_length(),
             local_marks = local_marks.get_key_length(),
             tab_marks = tab_marks.get_key_length(),
@@ -75,9 +105,13 @@ local function set_key_length(args)
         return
     end
     assert(args[1] ~= nil and args[2] ~= nil,
-        "args should contain 'module'(cwd|local|tab) and 'key length'")
-    assert(type(args[1]) == "string" and (args[1] == 'cwd' or args[1] == 'local' or args[1] == 'tab'),
-        "first argumet should be a string and equal to 'cwd', 'local', or 'tab'")
+        "args should contain 'module'(global|cwd|local|tab) and 'key length'")
+    assert(type(args[1]) == "string" and
+        (args[1] == 'global'
+            or args[1] == 'cwd'
+            or args[1] == 'local'
+            or args[1] == 'tab'),
+        "first argumet should be a string and equal to 'global', 'cwd', 'local', or 'tab'")
     assert(tonumber(args[2]), "the second argument should be be a number")
 
     local module = args[1]
@@ -88,7 +122,10 @@ local function set_key_length(args)
         "key length should be more than zero and less than 30. "
         .. "Current value is " .. key_length)
 
-    if module == 'cwd' then
+    if module == 'global' then
+        global_marks.set_key_length(key_length)
+        print("MarksGlobal: set key_length to: " .. key_length)
+    elseif module == 'cwd' then
         cwd_marks.set_key_length(key_length)
         print("MarksCwd: set key_length to: " .. key_length)
     elseif module == 'local' then
@@ -125,7 +162,6 @@ vim.api.nvim_create_user_command("MarksLocalDeleteAll", function()
 
 
 -- TAB MARKS
-
 local marks_tab_delete_completion = function(_, _, _)
     local marks = {}
 
@@ -165,7 +201,7 @@ vim.api.nvim_create_user_command("MarksKeyLength",
         nargs = "*",
         complete = function(_, b, _)
             return b:match('cwd') or b:match('local') or b:match('tab')
-                and {} or { "cwd", "local", "tab" }
+                and {} or { "global", "cwd", "local", "tab" }
         end
     })
 

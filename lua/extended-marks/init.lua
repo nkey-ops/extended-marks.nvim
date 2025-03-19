@@ -1,3 +1,4 @@
+local global_marks = require('extended-marks.global')
 local cwd_marks = require('extended-marks.cwd')
 local local_marks = require('extended-marks.local')
 local tab_marks = require('extended-marks.tab')
@@ -5,6 +6,12 @@ local utils = require('extended-marks.utils')
 
 local M = {}
 
+--- @class PubGlobalOpts allows external code to manage some configurations of
+---                      the global module
+--- @field key_length integer? default:4 | max number of characters in the mark [1 to 30)
+local PubGlobalOpts = {
+    key_length = 4
+}
 
 --- @class PubCwdOpts allows external code to manage some configurations of
 ---                   the cwd module
@@ -32,11 +39,13 @@ local PubTabOpts = {
 --- @class ExtendedMarksOpts configurations for extended-marks
 --- @field data_dir string? directory where "extended-marks" directory
 ---                         will be created and store all the data
+--- @field Global PubGlobalOpts? options that configure the global module
 --- @field Cwd PubCwdOpts? options that cofigure the cwd module
 --- @field Local PubLocalOpts? options that cofigure the local module
 --- @field Tab PubTabOpts? options that cofigure the tab module
 local Opts = {
     data_dir = vim.fn.glob("~/.cache/nvim/"), -- the path to data files
+    Global = PubGlobalOpts,
     Cwd = PubCwdOpts,
     Local = PubLocalOpts,
     Tab = PubTabOpts,
@@ -52,6 +61,16 @@ M.setup = function(opts)
     end
 
     opts.data_dir = utils.handle_data_dir(opts.data_dir)
+
+    if opts.Global then
+        --- @type GlobalSetOpts
+        local GlobalSetOpts = {
+            data_dir = opts.data_dir,
+            key_length = opts.Global.key_length,
+        }
+
+        global_marks.set_options(GlobalSetOpts)
+    end
 
     if opts.Cwd then
         --- @type CwdSetOpts
@@ -173,8 +192,10 @@ M.set_global_or_tab_mark = function()
     end
     assert(type(ch) == 'number')
 
-    if (ch >= 97 and ch <= 122) then --[a-z]
+    if (ch >= 97 and ch <= 122) then  --[a-z]
         tab_marks.set_mark(ch)
+    elseif ch >= 65 and ch <= 90 then --[A-Z]
+        global_marks.set_mark(ch)
     end
 end
 
@@ -196,8 +217,10 @@ M.jump_to_global_or_tab_mark = function()
 
     assert(type(ch) == 'number')
 
-    if (ch >= 97 and ch <= 122) then --[a-z]
+    if (ch >= 97 and ch <= 122) then  --[a-z]
         tab_marks.jump_to_mark(ch)
+    elseif ch >= 65 and ch <= 90 then --[A-Z]
+        global_marks.jump_to_mark(ch)
     elseif (ch == string.byte("'")) then
         vim.cmd("tabnext #") -- last accessed tab
     elseif (ch == string.byte("$")) then
