@@ -44,6 +44,8 @@ function M.get_json_decoded_data(file_path, working_dir)
     return decoded_file
 end
 
+--- @param file_path string
+--- @param data table
 function M.write_marks(file_path, data)
     assert(file_path ~= nil, "File path cannot be nil")
     assert(string.match(file_path, '%.json$'), "File should of type .json")
@@ -87,6 +89,7 @@ end
 
 --- Listens to the pressed keys as long as a new is not a back tick or the total
 --- number of pressed keys doesn't exceed max_seq_keys
+--- @return string|nil
 function M.get_mark_key(max_key_seq, first_char)
     assert(max_key_seq ~= nil
         and type(max_key_seq) == "number"
@@ -110,8 +113,8 @@ function M.get_mark_key(max_key_seq, first_char)
             return nil
         end
 
-        -- 96 is a back tick sign "`"
-        if (ch == 96) then
+        -- 96 is a back tick sign "`", 41 is a "'" single quote sign
+        if (ch == 96) or (ch == 39) then
             return chars
         end
 
