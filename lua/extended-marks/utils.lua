@@ -106,7 +106,7 @@ function M.get_mark_key(max_key_seq, first_char)
     local chars = string.char(first_char)
     if max_key_seq == 1 then return chars end
 
-    for _ = 1, max_key_seq do
+    for _ = 2, max_key_seq do
         local ch = vim.fn.getchar()
 
         if (type(ch) ~= "number") then
