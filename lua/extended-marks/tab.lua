@@ -50,9 +50,7 @@ tab.set_mark = function(first_char)
     local mark_key = utils.get_mark_key(TabOpts.key_length, first_char)
     if (mark_key == nil) then return end
 
-    print(mark_key .. " found")
     tab.delete_tab_mark(mark_key) -- removing a previous one, if present
-    print(mark_key .. " deleted")
     api.nvim_tabpage_set_var(0, mark_key_var_name, mark_key)
 
     local tabpage = api.nvim_win_get_tabpage(0);
@@ -74,7 +72,6 @@ tab.jump_to_mark = function(first_char)
 
     local mark_key = utils.get_mark_key(TabOpts.key_length, first_char)
 
-    print(mark_key .. " got")
     if mark_key == nil then return end
 
     for _, tab_id in pairs(api.nvim_list_tabpages()) do
