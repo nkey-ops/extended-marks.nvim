@@ -78,7 +78,7 @@ local marks_local_delete_completion = function(_, _, _)
         marks = {}
     end
 
-    table.sort(marks[current_buffer])
+    table.sort(marks)
 
     local mark_keys = {}
     local i = 1;
