@@ -15,9 +15,9 @@ local PubGlobalOpts = {
 
 --- @class PubCwdOpts allows external code to manage some configurations of
 ---                   the cwd module
---- @field key_length integer? default:1 | max number of characters in the mark [1 to 30)
+--- @field key_length integer? default:4 | max number of characters in the mark [1 to 30)
 local PubCwdOpts = {
-    key_length = 1
+    key_length = 4
 }
 
 --- @class PubLocalOpts allows external code to manage some configurations of
@@ -37,7 +37,7 @@ local PubTabOpts = {
 }
 
 --- @class ExtendedMarksOpts configurations for extended-marks
---- @field data_dir string? directory where "extended-marks" directory
+--- @field data_dir string?  default:"~/.cache/nvim/" | directory where "extended-marks" directory
 ---                         will be created and store all the data
 --- @field Global PubGlobalOpts? options that configure the global module
 --- @field Cwd PubCwdOpts? options that cofigure the cwd module
