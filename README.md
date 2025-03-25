@@ -3,21 +3,42 @@ Still in development process...
 
 
 # Features
-- Mark-keys can have arbitrary length. 
+- Global, Cwd, and Tab mark-keys can have an arbitrary length. 
 - Cwd marks allow to mark files relatively to a current working directory.
 - Local marks are persisted between sessions.
 - Tab marks allow quickly navigate between tabs without looking at them.
+
+# Global Marks
+`Global marks` can mark a file and using the mark, a jump to the file can be made from any point of the system.
+
+#### How to Use
+Hit `M` (default config) to start writing a first letter of the mark, If the first letter is capital it will be a [#Global Marks](#global-marks), otherwise a [#Tab Marks](#tab-marks) 
+
+At most you can have `Global.key_length` letters in the mark (including the first one).
+
+> 1. If you exhaust your max number of letters, the mark will be set.
+> 2. If you don't want to use all the allowed letters for the mark, you can hit `'` (single-quote) to mark the file with the currently provided set of letters.
+> 3. If you want to interrupt marking process, hit any key except for `'` and `[a-zA-Z]`
+
+In order to open the file under a certain mark you should hit `'` and then `[A-Z][a-zA-Z]*`: first uppercase letter to use a [#Global Marks](#global-marks) and then, if your mark has more then one letter, the remaining ones.
+
+    :MarksGlobal                     - to check all the global marks
+    :MarksGlobalDelete [mark]        - to delete the global mark
+
+    :MarksKeyLength                  - shows the max number of letters for global, cwd, local and tab marks
+    :MarksKeyLength global [num]     - to set the max number of letters for global marks
+                                       (it is not persited between sessions use the config for that)
 
 # CWD Marks | Current Working Directory Marks
 `Cwd marks` mark a file relatively to the current working directory. See `:help current-directory`. It's logic is similar to global marks of vim but the available set of marks is based on the current working directory. It's useful for modular projects or just different projects in general where you want to have a set of marked files for each project separately.
 
 #### How to Use
-Hit `m` (default config) to start writing a first letter of the mark.  If the first letter is capital it will be a `cwd mark`, otherwise a `local mark`. 
+Hit `m` (default config) to start writing a first letter of the mark.  If the first letter is capital it will be a `cwd mark`, otherwise a [#Local Marks](#local-marks). 
 
 At most you can have `Cwd.key_length` letters in the mark (including the first one). 
 
 > 1. If you exhaust your max number of letters, the mark will be set.
-> 2. If you don't want to use all the allowed letters for the mark, you can hit `` ` `` (default config) to mark the file with the currently provided set letters.
+> 2. If you don't want to use all the allowed letters for the mark, you can hit `` ` `` (back-tick) to mark the file with the currently provided set of letters.
 > 3. If you want to interrupt marking process, hit any key except for `` ` `` and `[a-zA-Z]`
 
 In order to open the file under a certain mark you should hit `` ` `` and then `[A-Z][a-zA-Z]*`: first uppercase letter to use a `cwd mark` and then, if your mark has more then one letter, the remaining ones.
@@ -28,7 +49,7 @@ Supported letters for the mark are `[a-zA-Z]` only the case of the first letter 
     :MarksCwdAll                  - to check all cwd marks for all directories
     :MarksCwdDelete [mark]        - to delete the mark
 
-    :MarksKeyLength               - shows the max number of letters for cwd, local and tab marks
+    :MarksKeyLength               - shows the max number of letters for global, cwd, local and tab marks
     :MarksKeyLength cwd [num]     - to set the max number of letters for cwd marks
                                     (it is not persited between sessions use the config for that)
 
@@ -72,13 +93,15 @@ Hit `M` (default config) to mark a file. With the default configuration it will 
 At most you can have `Tab.key_length` letters in the mark.
 
 > 1. If you exhaust your max number of letters, the mark will be set.
-> 2. If you don't want to use all the allowed letters for the mark, you can hit `` ` `` (default config) to mark the current tab with the currently provided set of letters.
-> 3. If you want to interrupt marking process, hit any key except for `` ` `` and `[a-zA-Z]`
+> 2. If you don't want to use all the allowed letters for the mark, you can hit `'` (single quote) to mark the current tab with the currently provided set of letters.
+> 3. If you want to interrupt marking process, hit any key except for `'` and `[a-zA-Z]`
 
-> In order to open a tab under a certain mark you should hit `` ` `` and then `[a-zA-Z]+`
+> In order to open a tab under a certain mark you should hit `'` and then `[a-zA-Z]+`
 
     :MarksTab                   - to check all the tab marks
     :MarksTabDelete             - to delete tab mark by its key
+
+    :MarksKeyLength               - shows the max number of letters for global, cwd, local and tab marks
     :MarksKeyLength tab [num]   - to set the max number of letters for tab marks 
                                   (it is not persited between sessions use the config for that)
 
@@ -87,16 +110,20 @@ At most you can have `Tab.key_length` letters in the mark.
 ```lua
 {
     "nkey-ops/extended-marks.nvim",
+    --- @type ExtendedMarksOpts
     opts =
     {
         -- this is the default configurations for setup function
         data_dir = "~/.cache/nvim/", -- Here extended-marks directory will be created to store data
-        Local = {
-            key_length = 1,          -- valid from 1 to 30
-            sign_column = 1,         -- 0 for no, 1 or 2 for number of characters
+        Global = {
+            key_length = 4           -- valid from 1 to 30
         },
         Cwd = {
             key_length = 4,
+        },
+        Local = {
+            key_length = 1,
+            sign_column = 1,         -- 0 for no, 1 or 2 for number of characters
         },
         Tab = {
             key_length = 1,
