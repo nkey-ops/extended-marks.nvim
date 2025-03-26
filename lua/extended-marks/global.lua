@@ -118,19 +118,7 @@ function global.jump_to_mark(first_char)
         return
     end
 
-    -- if the file exist and is readable
-    -- 1. add the file as a buffer
-    -- 2. load the buffer
-    -- 3. set 'buflisted' option to true
-    -- 4. open the buffer
-    local buf = vim.fn.bufadd(path)
-    vim.fn.bufload(buf)
-    assert(vim.api.nvim_buf_is_loaded(buf), "buf should be loaded")
-
-    vim.api.nvim_set_option_value("buflisted", true, { buf = buf })
-    assert(vim.fn.buflisted(buf) ~= 0, "buf should be listed")
-
-    vim.api.nvim_set_current_buf(buf)
+    vim.cmd("e " .. path)
 end
 
 -- Global Functions
