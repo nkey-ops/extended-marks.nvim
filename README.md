@@ -1,7 +1,3 @@
-# extended-marks.nvim
-Still in development process...
-
-
 # Features
 - Global, Cwd, and Tab mark-keys can have an arbitrary length. 
 - Cwd marks allow to mark files relatively to a current working directory.
@@ -12,7 +8,7 @@ Still in development process...
 `Global marks` can mark a file and using the mark, a jump to the file can be made from any point of the system.
 
 #### How to Use
-Hit `M` (default config) to start writing a first letter of the mark, If the first letter is capital it will be a [#Global Marks](#global-marks), otherwise a [#Tab Marks](#tab-marks) 
+Hit `M` (default config) to start writing a first letter of the mark, If the first letter is capital it will be a [global mark](#global-marks), otherwise a [tab mark](#tab-marks) 
 
 At most you can have `Global.key_length` letters in the mark (including the first one).
 
@@ -20,7 +16,7 @@ At most you can have `Global.key_length` letters in the mark (including the firs
 > 2. If you don't want to use all the allowed letters for the mark, you can hit `'` (single-quote) to mark the file with the currently provided set of letters.
 > 3. If you want to interrupt marking process, hit any key except for `'` and `[a-zA-Z]`
 
-In order to open the file under a certain mark you should hit `'` and then `[A-Z][a-zA-Z]*`: first uppercase letter to use a [#Global Marks](#global-marks) and then, if your mark has more then one letter, the remaining ones.
+In order to open the file under a certain mark you should hit `'` and then `[A-Z][a-zA-Z]*`: first uppercase letter to use a [global mark](#global-marks) and then, if your mark has more then one letter, the remaining ones.
 
     :MarksGlobal                     - to check all the global marks
     :MarksGlobalDelete [mark]        - to delete the global mark
@@ -29,11 +25,11 @@ In order to open the file under a certain mark you should hit `'` and then `[A-Z
     :MarksKeyLength global [num]     - to set the max number of letters for global marks
                                        (it is not persited between sessions use the config for that)
 
-# CWD Marks | Current Working Directory Marks
+# CWD Marks
 `Cwd marks` mark a file relatively to the current working directory. See `:help current-directory`. It's logic is similar to global marks of vim but the available set of marks is based on the current working directory. It's useful for modular projects or just different projects in general where you want to have a set of marked files for each project separately.
 
 #### How to Use
-Hit `m` (default config) to start writing a first letter of the mark.  If the first letter is capital it will be a `cwd mark`, otherwise a [#Local Marks](#local-marks). 
+Hit `m` (default config) to start writing a first letter of the mark. If the first letter is capital it will be a [cwd mark](#cwd-marks), otherwise a [local mark](#local-marks). 
 
 At most you can have `Cwd.key_length` letters in the mark (including the first one). 
 
@@ -88,7 +84,7 @@ To be filled
 `Tab Marks` mark a tab (see: h:tab-page-intro) you have currently opened. 
 
 #### How to Use
-Hit `M` (default config) to mark a file. With the default configuration it will be enough to mark the current tab, if necessary the number of letters in the mark can be increased.
+Hit `M` (default config) to start writing a first letter of the mark. If the first letter is lower case it will be a [tab mark](#tab-marks), otherwise a [global mark](#global-marks). 
 
 At most you can have `Tab.key_length` letters in the mark.
 
@@ -101,7 +97,7 @@ At most you can have `Tab.key_length` letters in the mark.
     :MarksTab                   - to check all the tab marks
     :MarksTabDelete             - to delete tab mark by its key
 
-    :MarksKeyLength               - shows the max number of letters for global, cwd, local and tab marks
+    :MarksKeyLength             - shows the max number of letters for global, cwd, local and tab marks
     :MarksKeyLength tab [num]   - to set the max number of letters for tab marks 
                                   (it is not persited between sessions use the config for that)
 
