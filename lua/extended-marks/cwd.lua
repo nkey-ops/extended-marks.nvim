@@ -5,14 +5,19 @@ local cwd = {}
 --- @class CwdOpts manages configuration of the cwd module
 --- @field data_file string path to the data directory
 --- @field key_length integer default:5 | max number of characters in the mark (1 to 30)
+--- @field confirmation boolean? default:false | whether require "'" or "`" to
+---                              stop key marking or jump to a mark key
 local CwdOpts = {
     data_file = vim.fn.glob("~/.cache/nvim/extended-marks") .. "/cwd_marks.json",
     key_length = 5,
+    confirmation = false
 }
 
 --- @class CwdSetOpts
 --- @field data_dir string a path to the data directory
 --- @field key_length integer? default:5 | max number of characters in the mark [1 to 30)
+--- @field confirmation boolean? default:false | whether require "'" or "`" to
+---                              stop key marking or jump to a mark key
 
 --- sets the options for the cwd module
 --- @param opts CwdSetOpts
@@ -31,6 +36,11 @@ function cwd.set_options(opts)
     if opts.key_length then
         cwd.set_key_length(opts.key_length)
     end
+
+    if opts.confirmation then
+        assert(type(opts.confirmation) == 'boolean', "opts.confirmation should be of type boolean")
+        CwdOpts.confirmation = opts.confirmation
+    end
 end
 
 --- @param key_length integer max number of characters in the mark [1 to 30)
@@ -48,7 +58,7 @@ function cwd.get_key_length()
 end
 
 function cwd.set_cwd_mark(first_char)
-    local mark_key = utils.get_mark_key(CwdOpts.key_length, first_char)
+    local mark_key = utils.get_mark_key(CwdOpts.key_length, first_char, CwdOpts.confirmation)
     if (mark_key == nil) then return end
 
     local working_dir = vim.fn.getcwd()
@@ -79,7 +89,7 @@ function cwd.jump_to_cwd_mark(first_char)
     local working_dir = vim.fn.getcwd()
     local marks = utils.get_json_decoded_data(CwdOpts.data_file, working_dir)
 
-    local mark_key = utils.get_mark_key(CwdOpts.key_length, first_char)
+    local mark_key = utils.get_mark_key(CwdOpts.key_length, first_char, CwdOpts.confirmation)
 
     if mark_key == nil then return end
 

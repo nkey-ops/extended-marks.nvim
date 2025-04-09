@@ -38,13 +38,17 @@ local PubTabOpts = {
 
 --- @class ExtendedMarksOpts configurations for extended-marks
 --- @field data_dir string?  default:"~/.cache/nvim/" | directory where "extended-marks" directory
----                         will be created and store all the data
+---                          will be created and store all the data
+--- @field confirmation boolean? default:false | whether to require a "'" or "`" key
+---                              press in order to stop key marking process
+---                              or jump to a mark key
 --- @field Global PubGlobalOpts? options that configure the global module
 --- @field Cwd PubCwdOpts? options that cofigure the cwd module
 --- @field Local PubLocalOpts? options that cofigure the local module
 --- @field Tab PubTabOpts? options that cofigure the tab module
 local Opts = {
     data_dir = vim.fn.glob("~/.cache/nvim/"), -- the path to data files
+    confirmation = false,
     Global = PubGlobalOpts,
     Cwd = PubCwdOpts,
     Local = PubLocalOpts,
@@ -67,6 +71,7 @@ M.setup = function(opts)
         local GlobalSetOpts = {
             data_dir = opts.data_dir,
             key_length = opts.Global.key_length,
+            confirmation = opts.confirmation
         }
 
         global_marks.set_options(GlobalSetOpts)
@@ -77,6 +82,7 @@ M.setup = function(opts)
         local CwdSetOpts = {
             data_dir = opts.data_dir,
             key_length = opts.Cwd.key_length,
+            confirmation = opts.confirmation
         }
 
         cwd_marks.set_options(CwdSetOpts)
@@ -87,7 +93,8 @@ M.setup = function(opts)
         local LocalSetOpts = {
             data_dir = opts.data_dir,
             key_length = opts.Local.key_length,
-            sign_column = opts.Local.sign_column
+            sign_column = opts.Local.sign_column,
+            confirmation = opts.confirmation
         }
 
         local_marks.set_options(LocalSetOpts)
@@ -96,7 +103,8 @@ M.setup = function(opts)
     if opts.Tab then
         --- @type TabSetOpts
         local TabSetOpts = {
-            key_length = opts.Tab.key_length
+            key_length = opts.Tab.key_length,
+            confirmation = opts.confirmation
         }
         tab_marks.set_options(TabSetOpts)
     end

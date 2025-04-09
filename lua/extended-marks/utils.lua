@@ -90,7 +90,7 @@ end
 --- Listens to the pressed keys as long as a new is not a back tick or the total
 --- number of pressed keys doesn't exceed max_seq_keys
 --- @return string|nil
-function M.get_mark_key(max_key_seq, first_char)
+function M.get_mark_key(max_key_seq, first_char, confirmation)
     assert(max_key_seq ~= nil
         and type(max_key_seq) == "number"
         and max_key_seq > 0
@@ -102,6 +102,8 @@ function M.get_mark_key(max_key_seq, first_char)
             or (first_char >= 97 and first_char <= 122)),
         "first_char should be [a-zA-Z] character")
 
+    assert(confirmation ~= nil, "confirmation cannot be nil")
+    assert(type(confirmation) == 'boolean', "confirmation should be of type boolean")
 
     local chars = string.char(first_char)
     if max_key_seq == 1 then return chars end
@@ -125,6 +127,16 @@ function M.get_mark_key(max_key_seq, first_char)
 
         chars = chars .. string.char(ch)
     end
+
+    if confirmation then
+        local confirmation_char = vim.fn.getchar()
+        if type(confirmation_char) ~= "number"
+            or (confirmation_char ~= 96
+                and confirmation_char ~= 39) then
+            return nil
+        end
+    end
+
     return chars
 end
 
