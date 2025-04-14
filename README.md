@@ -101,6 +101,8 @@ At most you can have `Tab.key_length` letters in the mark.
     :MarksKeyLength tab [num]   - to set the max number of letters for tab marks 
                                   (it is not persited between sessions use the config for that)
 
+> Tab marks are stored in the session so you can access them via `vim.t[tab_id]["mark_key"]` where tab_id is your 1st, 2nd and so on tab numbers.
+
 # Configurations
 ## Lazy.nvim
 ```lua
