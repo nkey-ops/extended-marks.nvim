@@ -65,7 +65,7 @@ function cwd.set_cwd_mark(first_char)
     local marked_file = vim.api.nvim_buf_get_name(0)
     local data = utils.get_json_decoded_data(CwdOpts.data_file, working_dir)
 
-    data[working_dir][mark_key] = marked_file
+    data[working_dir][mark_key].path = marked_file
 
     utils.write_marks(CwdOpts.data_file, data)
     print("MarksCwd:[" .. mark_key .. "]", marked_file)
@@ -100,19 +100,19 @@ function cwd.jump_to_cwd_mark(first_char)
     end
 
     -- if the buffer is present, open it
-    if vim.fn.bufexists(marked_file) == 1 then
-        vim.cmd(vim.fn.bufadd(marked_file) .. "b")
+    if vim.fn.bufexists(marked_file.path) == 1 then
+        vim.cmd(vim.fn.bufadd(marked_file.path) .. "b")
         return
     end
 
     -- the file doesn't exist or is no readable
-    if vim.fn.filereadable(marked_file) == 0 then
+    if vim.fn.filereadable(marked_file.path) == 0 then
         print(string.format(
-            "MarksCwd: file wasn't found or is not readable \"%s\"", marked_file))
+            "MarksCwd: file wasn't found or is not readable \"%s\"", marked_file.path))
         return
     end
 
-    vim.cmd("e " .. marked_file)
+    vim.cmd("e " .. marked_file.path)
 end
 
 -- Cwd Functions
