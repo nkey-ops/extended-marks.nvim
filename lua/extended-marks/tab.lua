@@ -10,11 +10,11 @@ local tab = {}
 
 --- @class TabOpts manages configuration of the tab module
 --- @field key_length number default:1 | max number of characters in the mark [1 to 30)
---- @field confirmation boolean? default:false | whether require "'" or "`" to
+--- @field confirmation_press boolean? default:false | whether require "'" or "`" to
 ---                              stop key marking or jump to a mark key
 local TabOpts = {
     key_length = 1,
-    confirmation = false,
+    confirmation_press = false,
 }
 
 local mark_key_var_name = "mark_key"
@@ -22,7 +22,7 @@ local api = vim.api
 
 --- @class TabSetOpts
 --- @field key_length? integer default:1 | max number of characters in the mark [1 to 30)
---- @field confirmation boolean? default:false | whether require "'" or "`" to
+--- @field confirmation_press boolean? default:false | whether require "'" or "`" to
 ---                              stop key marking or a jump to mark key
 
 --- @param opts TabSetOpts
@@ -38,9 +38,9 @@ function tab.set_options(opts)
         TabOpts.key_length = key_length
     end
 
-    if opts.confirmation then
-        assert(type(opts.confirmation) == 'boolean', "opts.confirmation should be of type boolean")
-        TabOpts.confirmation = opts.confirmation
+    if opts.confirmation_press then
+        assert(type(opts.confirmation_press) == 'boolean', "opts.confirmation_press should be of type boolean")
+        TabOpts.confirmation_press = opts.confirmation_press
     end
 end
 
@@ -57,7 +57,7 @@ tab.set_mark = function(first_char)
     assert(first_char >= 65 and first_char <= 90 or first_char >= 97 and first_char <= 122,
         "First mark key character value should be [a-zA-Z]")
 
-    local mark_key = utils.get_mark_key(TabOpts.key_length, first_char, TabOpts.confirmation)
+    local mark_key = utils.get_mark_key(TabOpts.key_length, first_char, TabOpts.confirmation_press)
     if (mark_key == nil) then return end
 
     tab.delete_tab_mark(mark_key) -- removing a previous one, if present
@@ -80,7 +80,7 @@ tab.jump_to_mark = function(first_char)
     assert(first_char >= 65 and first_char <= 90 or first_char >= 97 and first_char <= 122,
         "First mark key character value should be [a-zA-Z]")
 
-    local mark_key = utils.get_mark_key(TabOpts.key_length, first_char, TabOpts.confirmation)
+    local mark_key = utils.get_mark_key(TabOpts.key_length, first_char, TabOpts.confirmation_press)
 
     if mark_key == nil then return end
 
