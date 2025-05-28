@@ -115,7 +115,7 @@ function M.get_mark_key(max_key_seq, first_char, confirmation)
             return nil
         end
 
-        -- 96 is a back tick sign "`", 41 is a "'" single quote sign
+        -- 96 is a back tick sign "`", 39 is a "'" single quote sign
         if (ch == 96) or (ch == 39) then
             return chars
         end
@@ -223,6 +223,29 @@ function M.handle_data_dir(data_dir)
     -- sub-directories are created recursively as needed
     vim.fn.mkdir(data_dir_path, 'p')
     return data_dir_path
+end
+
+function M.get_line_separator()
+    if vim.loop.os_uname().sysname == "Windows_NT" then
+        return "\r\n"
+    else
+        return "\n"
+    end
+end
+
+--- Prints the input an if recently there was a message it will hold all of the
+--- messages in the window for 500 milliseconds
+--- @param ... any to print
+function M.print_wihout_hit_enter(...)
+    local messages_opt_value = vim.opt.messagesopt._value
+
+    -- setting coppied settings back but excluding "hit-enter" settings
+    vim.cmd("set messagesopt=wait:500," .. messages_opt_value:gsub(",?hit%-enter,?", ""))
+
+    print(...)
+
+    -- setting back initial settings
+    vim.cmd("set messagesopt=" .. messages_opt_value)
 end
 
 return M

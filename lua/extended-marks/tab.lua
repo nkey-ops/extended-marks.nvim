@@ -12,9 +12,11 @@ local tab = {}
 --- @field key_length number default:1 | max number of characters in the mark [1 to 30)
 --- @field confirmation_press boolean? default:false | whether require "'" or "`" to
 ---                              stop key marking or jump to a mark key
+--- @field confirmation_on_replace boolean? default:false | whether show a confirmation window when a mark being replaced
 local TabOpts = {
     key_length = 1,
     confirmation_press = false,
+    confirmation_on_replace = false
 }
 
 local mark_key_var_name = "mark_key"
@@ -24,7 +26,7 @@ local api = vim.api
 --- @field key_length? integer default:1 | max number of characters in the mark [1 to 30)
 --- @field confirmation_press boolean? default:false | whether require "'" or "`" to
 ---                              stop key marking or a jump to mark key
-
+--- @field confirmation_on_replace boolean? default:false | whether show a confirmation window when a mark being replaced
 --- @param opts TabSetOpts
 function tab.set_options(opts)
     assert(opts ~= nil, "opts cannot be nil")
@@ -41,6 +43,11 @@ function tab.set_options(opts)
     if opts.confirmation_press then
         assert(type(opts.confirmation_press) == 'boolean', "opts.confirmation_press should be of type boolean")
         TabOpts.confirmation_press = opts.confirmation_press
+    end
+
+    if opts.confirmation_on_replace then
+        assert(type(opts.confirmation_on_replace) == 'boolean', "opts.confirmation_on_replace should be of type boolean")
+        TabOpts.confirmation_on_replace = opts.confirmation_on_replace
     end
 end
 
@@ -60,11 +67,50 @@ tab.set_mark = function(first_char)
     local mark_key = utils.get_mark_key(TabOpts.key_length, first_char, TabOpts.confirmation_press)
     if (mark_key == nil) then return end
 
-    tab.delete_tab_mark(mark_key) -- removing a previous one, if present
+
+    local previous_marked_tab = nil
+    local previous_marked_tab_id = nil
+
+    for _, tab_id in pairs(api.nvim_list_tabpages()) do
+        if vim.t[tab_id][mark_key_var_name] == mark_key then
+            previous_marked_tab = vim.t[tab_id]
+            previous_marked_tab_id = tab_id
+            break
+        end
+    end
+
+    -- If previous marked tab exists
+    if previous_marked_tab then
+        -- If marking the same tab then do nothing
+        if previous_marked_tab_id == api.nvim_get_current_tabpage() then
+            return
+        end
+
+        -- If  required to confirm the replacement then ask for confirmation
+        if TabOpts.confirmation_on_replace then
+            --- @type string
+            local answer = vim.fn.input({
+                prompt = string.format("Do you want to override the mark? \"Tab Number: %s\"%s[yes\\no] > ",
+                    previous_marked_tab_id, utils.get_line_separator()
+                )
+            }):lower()
+
+            --- @type boolean
+            local isYes = answer:match("^y$") or answer:match("^ye$") or answer:match("^yes$")
+
+            if not isYes then
+                return
+            end
+        end
+
+        previous_marked_tab[mark_key_var_name] = nil
+    end
+
     api.nvim_tabpage_set_var(0, mark_key_var_name, mark_key)
 
     local tabpage = api.nvim_win_get_tabpage(0);
-    print(string.format("MarksTab:[%s:%s]", mark_key, tabpage))
+
+    utils.print_wihout_hit_enter(string.format("MarksTab:[%s:%s]", mark_key, tabpage))
 end
 
 --- Jumps to a tab page containing inputted mark. If the mark key input is correct,

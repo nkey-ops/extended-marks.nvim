@@ -15,17 +15,19 @@ local locaL = {}
 
 --- @class LocalOpts manages configuration of the local module
 --- @field data_file string path to the data file
---- @field namespace string namespace id where local marks will be stored
+--- @field namespace integer namespace id where local marks will be stored
 --- @field key_length integer default:1 | max number of characters in the mark [1 to 30)
 --- @field sign_column 0|1|2 0 for no, 1 or 2 for number of characters
 --- @field confirmation_press boolean? default:false | whether require "'" or "`" to
 ---                              stop key marking or jump to a mark key
+--- @field confirmation_on_replace boolean? default:false | whether show a confirmation window when a mark being replaced
 local LocalOpts = {
     data_file = vim.fn.glob("~/.cache/nvim/extended-marks") .. "/local_marks.json",
     namespace = vim.api.nvim_create_namespace("local_marks"),
     key_length = 1,
     sign_column = 1,
-    confirmation_press = false
+    confirmation_press = false,
+    confirmation_on_replace = false
 }
 
 --- @class LocalSetOpts
@@ -34,7 +36,7 @@ local LocalOpts = {
 --- @field sign_column 0|1|2|nil default:1 | 0 for no, 1 or 2 for number of characters
 --- @field confirmation_press boolean? default:false | whether require "'" or "`" to
 ---                              stop key marking or jump to a mark key
-
+--- @field confirmation_on_replace boolean? default:false | whether show a confirmation window when a mark being replaced
 --- Sets the LocalOpts for the local module
 --- @param opts LocalSetOpts
 function locaL.set_options(opts)
@@ -64,6 +66,11 @@ function locaL.set_options(opts)
         assert(type(opts.confirmation_press) == 'boolean', "opts.confirmation_press should be of type boolean")
         LocalOpts.confirmation_press = opts.confirmation_press
     end
+
+    if opts.confirmation_on_replace then
+        assert(type(opts.confirmation_on_replace) == 'boolean', "opts.confirmation_on_replace should be of type boolean")
+        LocalOpts.confirmation_on_replace = opts.confirmation_on_replace
+    end
 end
 
 --- @param key_length integer max number of characters in the mark [1 to 30)
@@ -92,7 +99,39 @@ function locaL.set_local_mark(first_char)
     local local_buffer_name = vim.api.nvim_buf_get_name(current_buffer_id)
     local buffers = utils.get_json_decoded_data(LocalOpts.data_file, local_buffer_name)
 
+    local pos = vim.api.nvim_win_get_cursor(0)
+    pos[1] = pos[1] - 1 -- zero-based api-indexing
+    local current_marked_line = vim.api.nvim_buf_get_lines(
+        current_buffer_id, pos[1], pos[1] + 1, true)[1]
 
+    local mark = buffers[local_buffer_name][mark_key]
+
+    -- If the previous mark exists
+    if mark then
+        local previous_marked_line = vim.api.nvim_buf_get_lines(current_buffer_id, mark[2], mark[2] + 1, true)[1]
+
+        -- If marking the same line then do nothing
+        if current_marked_line == previous_marked_line then
+            return
+        end
+
+        -- If required to confirm the replacement then ask for confirmation
+        if LocalOpts.confirmation_on_replace then
+            --- @type string
+            local answer = vim.fn.input({
+                prompt = string.format("Do you want to override the mark? \"%s\"%s[yes\\no] > ",
+                    previous_marked_line, utils.get_line_separator()
+                )
+            }):lower()
+
+            --- @type boolean
+            local isYes = answer:match("^y$") or answer:match("^ye$") or answer:match("^yes$")
+
+            if not isYes then
+                return
+            end
+        end
+    end
     -- set mark with one or two letters from the mark_key as a sign-column
     local extmark_opts = {}
     if LocalOpts.sign_column ~= 0 then
@@ -104,12 +143,8 @@ function locaL.set_local_mark(first_char)
         extmark_opts.id = buffers[local_buffer_name][mark_key][1]
     end
 
-    local pos = vim.api.nvim_win_get_cursor(0)
-    pos[1] = pos[1] - 1 -- zero-based api-indexing
-    local marked_line_string = vim.api.nvim_buf_get_lines(
-        current_buffer_id, pos[1], pos[1] + 1, true)[1]
 
-    extmark_opts.end_col = string.len(marked_line_string)
+    extmark_opts.end_col = string.len(current_marked_line)
 
     -- place mark at the beginning of the line
     local mark_id = vim.api.nvim_buf_set_extmark(
@@ -119,8 +154,7 @@ function locaL.set_local_mark(first_char)
 
     utils.write_marks(LocalOpts.data_file, buffers)
 
-    print(
-        string.format("MarksLocal:[%s:%s] \"%s\"", mark_key, pos[1] + 1, marked_line_string))
+    utils.print_wihout_hit_enter(string.format("MarksLocal:[%s:%s] \"%s\"", mark_key, pos[1] + 1, current_marked_line))
 end
 
 function locaL.jump_to_local_mark(first_char)

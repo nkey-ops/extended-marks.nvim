@@ -24,10 +24,12 @@ local global = {}
 --- @field key_length integer default:4 | max number of characters in the mark [1 to 30)
 --- @field confirmation_press boolean? default:false | whether require "'" or "`" to
 ---                              stop key marking or jump to a mark key
+--- @field confirmation_on_replace boolean? default:false | whether show a confirmation window when a mark being replaced
 local GlobalOpts = {
     data_file = vim.fn.glob("~/.cache/nvim/extended-marks") .. "/global_marks.json",
     key_length = 4,
-    confirmation_press = false
+    confirmation_press = false,
+    confirmation_on_replace = false
 }
 
 --- @class GlobalSetOpts defines which options can be set to configure this module
@@ -35,6 +37,7 @@ local GlobalOpts = {
 --- @field key_length integer? default:4 | max number of characters in the mark [1 to 30)
 --- @field confirmation_press boolean? default:false | whether require "'" or "`" to
 ---                              stop key marking or jump to a mark key
+--- @field confirmation_on_replace boolean? default:false | whether show a confirmation window when a mark being replaced
 
 --- sets the options for the global module
 --- @param opts GlobalSetOpts
@@ -57,6 +60,11 @@ function global.set_options(opts)
     if opts.confirmation_press then
         assert(type(opts.confirmation_press) == 'boolean', "opts.confirmation_press should be of type boolean")
         GlobalOpts.confirmation_press = opts.confirmation_press
+    end
+
+    if opts.confirmation_on_replace then
+        assert(type(opts.confirmation_on_replace) == 'boolean', "opts.confirmation_on_replace should be of type boolean")
+        GlobalOpts.confirmation_on_replace = opts.confirmation_on_replace
     end
 end
 
@@ -86,10 +94,37 @@ function global.set_mark(first_char)
     --- @type {[string]:GlobalMark}
     local marks = utils.get_json_decoded_data(GlobalOpts.data_file)
 
+    local mark = marks[mark_key]
+
+    -- If previous mark file exists
+    if mark then
+        -- If marking the same file then do nothing
+        if mark.path == marked_file then
+            return
+        end
+
+        -- If replacing the marked file and required to confirm the replacement then ask for confirmation
+        if GlobalOpts.confirmation_on_replace and mark then
+            --- @type string
+            local answer = vim.fn.input({
+                prompt = string.format("Do you want to override the mark? \"%s\"%s[yes\\no] > ",
+                    mark.path, utils.get_line_separator()
+                )
+            }):lower()
+
+            --- @type boolean
+            local isYes = answer:match("^y$") or answer:match("^ye$") or answer:match("^yes$")
+
+            if not isYes then
+                return
+            end
+        end
+    end
     marks[mark_key] = { path = marked_file }
 
     utils.write_marks(GlobalOpts.data_file, marks)
-    print(string.format("MarksGlobal:[%s] - '%s'", mark_key, marked_file))
+
+    utils.print_wihout_hit_enter(string.format("MarksGlobal:[%s] - '%s'", mark_key, marked_file))
 end
 
 --- Jumps to the global mark (i.e. buffer if possible) using first_char as the

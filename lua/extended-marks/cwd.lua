@@ -7,10 +7,12 @@ local cwd = {}
 --- @field key_length integer default:5 | max number of characters in the mark (1 to 30)
 --- @field confirmation_press boolean? default:false | whether require "'" or "`" to
 ---                              stop key marking or jump to a mark key
+--- @field confirmation_on_replace boolean? default:false | whether show a confirmation window when a mark being replaced
 local CwdOpts = {
     data_file = vim.fn.glob("~/.cache/nvim/extended-marks") .. "/cwd_marks.json",
     key_length = 5,
-    confirmation_press = false
+    confirmation_press = false,
+    confirmation_on_replace = false
 }
 
 --- @class CwdSetOpts
@@ -18,6 +20,7 @@ local CwdOpts = {
 --- @field key_length integer? default:5 | max number of characters in the mark [1 to 30)
 --- @field confirmation_press boolean? default:false | whether require "'" or "`" to
 ---                              stop key marking or jump to a mark key
+--- @field confirmation_on_replace boolean? default:false | whether show a confirmation window when a mark being replaced
 
 --- sets the options for the cwd module
 --- @param opts CwdSetOpts
@@ -40,6 +43,11 @@ function cwd.set_options(opts)
     if opts.confirmation_press then
         assert(type(opts.confirmation_press) == 'boolean', "opts.confirmation_press should be of type boolean")
         CwdOpts.confirmation_press = opts.confirmation_press
+    end
+
+    if opts.confirmation_on_replace then
+        assert(type(opts.confirmation_on_replace) == 'boolean', "opts.confirmation_on_replace should be of type boolean")
+        CwdOpts.confirmation_on_replace = opts.confirmation_on_replace
     end
 end
 
@@ -65,10 +73,37 @@ function cwd.set_cwd_mark(first_char)
     local marked_file = vim.api.nvim_buf_get_name(0)
     local data = utils.get_json_decoded_data(CwdOpts.data_file, working_dir)
 
-    data[working_dir][mark_key].path = marked_file
+    local mark = data[working_dir][mark_key]
 
+    -- If a file with the mark exists
+    if mark then
+        -- If marking the same file then do nothing
+        if mark.path == marked_file then
+            return
+        end
+
+        -- If replacing the marked file and required to confirm the replacement then ask for confirmation
+        if CwdOpts.confirmation_on_replace and mark then
+            --- @type string
+            local answer = vim.fn.input({
+                prompt = string.format("Do you want to override the mark? \"%s\"%s[yes\\no] > ",
+                    mark.path, utils.get_line_separator()
+                )
+            }):lower()
+
+            --- @type boolean
+            local isYes = answer:match("^y$") or answer:match("^ye$") or answer:match("^yes$")
+
+            if not isYes then
+                return
+            end
+        end
+    end
+
+    data[working_dir][mark_key] = { path = marked_file }
     utils.write_marks(CwdOpts.data_file, data)
-    print("MarksCwd:[" .. mark_key .. "]", marked_file)
+
+    utils.print_wihout_hit_enter(string.format("MarksCwd:[%s] - '%s'", mark_key, marked_file))
 end
 
 ---Jumps to the cwd mark (i.e. buffer if possible) using first_char as the
