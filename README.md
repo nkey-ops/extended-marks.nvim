@@ -108,20 +108,27 @@ At most you can have `Tab.key_length` letters in the mark.
 ```lua
 {
     "nkey-ops/extended-marks.nvim",
+    -- this is the default configurations for setup function
     --- @type ExtendedMarksOpts
     opts =
     {
-        -- this is the default configurations for setup function
-        data_dir = "~/.cache/nvim/", -- Here extended-marks directory will be created to store data
+        -- Here extended-marks directory will be created to store data
+        data_dir = "~/.cache/nvim/",
+        -- Whether to require a key press to confirm the jump/mark-set actions 
+        -- when mark letters are exhausted
+        confirmation_on_last_key = false,
+        -- Whether to require a confirmation (yes/no) to
+        -- allow marked file, line or tab replacement
+        confirmation_on_replace = false,
         Global = {
-            key_length = 4           -- valid from 1 to 30
+            key_length = 4 -- valid from 1 to 30
         },
         Cwd = {
             key_length = 4,
         },
         Local = {
             key_length = 1,
-            sign_column = 1,         -- 0 for no, 1 or 2 for number of characters
+            sign_column = 1, -- 0 for no, 1 or 2 for number of characters
         },
         Tab = {
             key_length = 1,
