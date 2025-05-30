@@ -39,7 +39,7 @@ local PubTabOpts = {
 --- @class ExtendedMarksOpts configurations for extended-marks
 --- @field data_dir string?  default:"~/.cache/nvim/" | directory where "extended-marks" directory
 ---                          will be created and store all the data
---- @field confirmation_press boolean? default:false | whether to require a "'" or "`" key
+--- @field confirmation_on_last_key boolean? default:false | whether to require a "'" or "`" key
 ---                              press in order to stop key marking process
 ---                              or jump to a mark key
 --- @field confirmation_on_replace boolean? default:false | whether show a confirmation window when a mark being replaced
@@ -49,7 +49,7 @@ local PubTabOpts = {
 --- @field Tab PubTabOpts? options that cofigure the tab module
 local Opts = {
     data_dir = vim.fn.glob("~/.cache/nvim/"), -- the path to data files
-    confirmation_press = false,
+    confirmation_on_last_key = false,
     confirmation_on_replace = false,
     Global = PubGlobalOpts,
     Cwd = PubCwdOpts,
@@ -73,7 +73,7 @@ M.setup = function(opts)
         local GlobalSetOpts = {
             data_dir = opts.data_dir,
             key_length = opts.Global.key_length,
-            confirmation_press = opts.confirmation_press,
+            confirmation_on_last_key = opts.confirmation_on_last_key,
             confirmation_on_replace = opts.confirmation_on_replace
         }
 
@@ -85,7 +85,7 @@ M.setup = function(opts)
         local CwdSetOpts = {
             data_dir = opts.data_dir,
             key_length = opts.Cwd.key_length,
-            confirmation_press = opts.confirmation_press,
+            confirmation_on_last_key = opts.confirmation_on_last_key,
             confirmation_on_replace = opts.confirmation_on_replace
         }
 
@@ -98,7 +98,7 @@ M.setup = function(opts)
             data_dir = opts.data_dir,
             key_length = opts.Local.key_length,
             sign_column = opts.Local.sign_column,
-            confirmation_press = opts.confirmation_press,
+            confirmation_on_last_key = opts.confirmation_on_last_key,
             confirmation_on_replace = opts.confirmation_on_replace
         }
 
@@ -109,7 +109,7 @@ M.setup = function(opts)
         --- @type TabSetOpts
         local TabSetOpts = {
             key_length = opts.Tab.key_length,
-            confirmation_press = opts.confirmation_press,
+            confirmation_on_last_key = opts.confirmation_on_last_key,
             confirmation_on_replace = opts.confirmation_on_replace
         }
         tab_marks.set_options(TabSetOpts)

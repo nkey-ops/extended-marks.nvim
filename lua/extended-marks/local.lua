@@ -18,7 +18,7 @@ local locaL = {}
 --- @field namespace integer namespace id where local marks will be stored
 --- @field key_length integer default:1 | max number of characters in the mark [1 to 30)
 --- @field sign_column 0|1|2 0 for no, 1 or 2 for number of characters
---- @field confirmation_press boolean? default:false | whether require "'" or "`" to
+--- @field confirmation_on_last_key boolean? default:false | whether require "'" or "`" to
 ---                              stop key marking or jump to a mark key
 --- @field confirmation_on_replace boolean? default:false | whether show a confirmation window when a mark being replaced
 local LocalOpts = {
@@ -26,7 +26,7 @@ local LocalOpts = {
     namespace = vim.api.nvim_create_namespace("local_marks"),
     key_length = 1,
     sign_column = 1,
-    confirmation_press = false,
+    confirmation_on_last_key = false,
     confirmation_on_replace = false
 }
 
@@ -34,7 +34,7 @@ local LocalOpts = {
 --- @field data_dir string a path to the data directory
 --- @field key_length? integer default:1 | max number of characters in the mark [1 to 30)
 --- @field sign_column 0|1|2|nil default:1 | 0 for no, 1 or 2 for number of characters
---- @field confirmation_press boolean? default:false | whether require "'" or "`" to
+--- @field confirmation_on_last_key boolean? default:false | whether require "'" or "`" to
 ---                              stop key marking or jump to a mark key
 --- @field confirmation_on_replace boolean? default:false | whether show a confirmation window when a mark being replaced
 --- Sets the LocalOpts for the local module
@@ -62,9 +62,10 @@ function locaL.set_options(opts)
         LocalOpts.sign_column = sign_column
     end
 
-    if opts.confirmation_press then
-        assert(type(opts.confirmation_press) == 'boolean', "opts.confirmation_press should be of type boolean")
-        LocalOpts.confirmation_press = opts.confirmation_press
+    if opts.confirmation_on_last_key then
+        assert(type(opts.confirmation_on_last_key) == 'boolean',
+            "opts.confirmation_on_last_key should be of type boolean")
+        LocalOpts.confirmation_on_last_key = opts.confirmation_on_last_key
     end
 
     if opts.confirmation_on_replace then
@@ -92,7 +93,7 @@ function locaL.set_local_mark(first_char)
     assert(first_char >= 65 and first_char <= 90 or first_char >= 97 and first_char <= 122,
         "First mark key character value should be [a-zA-Z]")
 
-    local mark_key = utils.get_mark_key(LocalOpts.key_length, first_char, LocalOpts.confirmation_press)
+    local mark_key = utils.get_mark_key(LocalOpts.key_length, first_char, LocalOpts.confirmation_on_last_key)
     if (mark_key == nil) then return end
 
     local current_buffer_id = vim.api.nvim_get_current_buf()
@@ -168,7 +169,7 @@ function locaL.jump_to_local_mark(first_char)
         utils.get_json_decoded_data(
             LocalOpts.data_file, local_buffer_name)[local_buffer_name]
 
-    local mark_key = utils.get_mark_key(LocalOpts.key_length, first_char, LocalOpts.confirmation_press)
+    local mark_key = utils.get_mark_key(LocalOpts.key_length, first_char, LocalOpts.confirmation_on_last_key)
 
     -- the remaining mark_key wasn't found(it was miss-typed apparently) just ignore the jump
     if mark_key == nil or local_marks[mark_key] == nil then return end

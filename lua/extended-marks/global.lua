@@ -22,20 +22,20 @@ local global = {}
 --- @class GlobalOpts manages configuration of the glob module
 --- @field data_file string path to the data directory
 --- @field key_length integer default:4 | max number of characters in the mark [1 to 30)
---- @field confirmation_press boolean? default:false | whether require "'" or "`" to
+--- @field confirmation_on_last_key boolean? default:false | whether require "'" or "`" to
 ---                              stop key marking or jump to a mark key
 --- @field confirmation_on_replace boolean? default:false | whether show a confirmation window when a mark being replaced
 local GlobalOpts = {
     data_file = vim.fn.glob("~/.cache/nvim/extended-marks") .. "/global_marks.json",
     key_length = 4,
-    confirmation_press = false,
+    confirmation_on_last_key = false,
     confirmation_on_replace = false
 }
 
 --- @class GlobalSetOpts defines which options can be set to configure this module
 --- @field data_dir string a path to the data directory
 --- @field key_length integer? default:4 | max number of characters in the mark [1 to 30)
---- @field confirmation_press boolean? default:false | whether require "'" or "`" to
+--- @field confirmation_on_last_key boolean? default:false | whether require "'" or "`" to
 ---                              stop key marking or jump to a mark key
 --- @field confirmation_on_replace boolean? default:false | whether show a confirmation window when a mark being replaced
 
@@ -57,9 +57,10 @@ function global.set_options(opts)
         global.set_key_length(opts.key_length)
     end
 
-    if opts.confirmation_press then
-        assert(type(opts.confirmation_press) == 'boolean', "opts.confirmation_press should be of type boolean")
-        GlobalOpts.confirmation_press = opts.confirmation_press
+    if opts.confirmation_on_last_key then
+        assert(type(opts.confirmation_on_last_key) == 'boolean',
+            "opts.confirmation_on_last_key should be of type boolean")
+        GlobalOpts.confirmation_on_last_key = opts.confirmation_on_last_key
     end
 
     if opts.confirmation_on_replace then
@@ -85,7 +86,7 @@ end
 
 --- @param first_char integer first character of the mark key
 function global.set_mark(first_char)
-    local mark_key = utils.get_mark_key(GlobalOpts.key_length, first_char, GlobalOpts.confirmation_press)
+    local mark_key = utils.get_mark_key(GlobalOpts.key_length, first_char, GlobalOpts.confirmation_on_last_key)
     if (mark_key == nil) then return end
 
     --- @type string
@@ -145,7 +146,7 @@ function global.jump_to_mark(first_char)
 
     --- @type {[string]:GlobalMark}
     local marks = utils.get_json_decoded_data(GlobalOpts.data_file)
-    local mark_key = utils.get_mark_key(GlobalOpts.key_length, first_char, GlobalOpts.confirmation_press)
+    local mark_key = utils.get_mark_key(GlobalOpts.key_length, first_char, GlobalOpts.confirmation_on_last_key)
 
     if mark_key == nil then return end
 

@@ -5,20 +5,20 @@ local cwd = {}
 --- @class CwdOpts manages configuration of the cwd module
 --- @field data_file string path to the data directory
 --- @field key_length integer default:5 | max number of characters in the mark (1 to 30)
---- @field confirmation_press boolean? default:false | whether require "'" or "`" to
+--- @field confirmation_on_last_key boolean? default:false | whether require "'" or "`" to
 ---                              stop key marking or jump to a mark key
 --- @field confirmation_on_replace boolean? default:false | whether show a confirmation window when a mark being replaced
 local CwdOpts = {
     data_file = vim.fn.glob("~/.cache/nvim/extended-marks") .. "/cwd_marks.json",
     key_length = 5,
-    confirmation_press = false,
+    confirmation_on_last_key = false,
     confirmation_on_replace = false
 }
 
 --- @class CwdSetOpts
 --- @field data_dir string a path to the data directory
 --- @field key_length integer? default:5 | max number of characters in the mark [1 to 30)
---- @field confirmation_press boolean? default:false | whether require "'" or "`" to
+--- @field confirmation_on_last_key boolean? default:false | whether require "'" or "`" to
 ---                              stop key marking or jump to a mark key
 --- @field confirmation_on_replace boolean? default:false | whether show a confirmation window when a mark being replaced
 
@@ -40,9 +40,10 @@ function cwd.set_options(opts)
         cwd.set_key_length(opts.key_length)
     end
 
-    if opts.confirmation_press then
-        assert(type(opts.confirmation_press) == 'boolean', "opts.confirmation_press should be of type boolean")
-        CwdOpts.confirmation_press = opts.confirmation_press
+    if opts.confirmation_on_last_key then
+        assert(type(opts.confirmation_on_last_key) == 'boolean',
+            "opts.confirmation_on_last_key should be of type boolean")
+        CwdOpts.confirmation_on_last_key = opts.confirmation_on_last_key
     end
 
     if opts.confirmation_on_replace then
@@ -66,7 +67,7 @@ function cwd.get_key_length()
 end
 
 function cwd.set_cwd_mark(first_char)
-    local mark_key = utils.get_mark_key(CwdOpts.key_length, first_char, CwdOpts.confirmation_press)
+    local mark_key = utils.get_mark_key(CwdOpts.key_length, first_char, CwdOpts.confirmation_on_last_key)
     if (mark_key == nil) then return end
 
     local working_dir = vim.fn.getcwd()
@@ -124,7 +125,7 @@ function cwd.jump_to_cwd_mark(first_char)
     local working_dir = vim.fn.getcwd()
     local marks = utils.get_json_decoded_data(CwdOpts.data_file, working_dir)
 
-    local mark_key = utils.get_mark_key(CwdOpts.key_length, first_char, CwdOpts.confirmation_press)
+    local mark_key = utils.get_mark_key(CwdOpts.key_length, first_char, CwdOpts.confirmation_on_last_key)
 
     if mark_key == nil then return end
 
