@@ -19,10 +19,12 @@ local marks_global_delete_completion = function(_, _, _)
     return mark_keys
 end
 
-vim.api.nvim_create_user_command("MarksGlobal", function()
-        global_marks.show_marks()
-    end,
-    { desc = "Lists global marked files" })
+vim.api.nvim_create_user_command("MarksGlobal",
+    function(opts) global_marks.show_marks(opts) end, {
+        desc = "Lists global marked files",
+        complete = marks_global_delete_completion,
+        nargs = "*"
+    })
 
 vim.api.nvim_create_user_command("MarksGlobalDelete",
     function(opts) global_marks.delete_mark(opts.args) end, {
@@ -32,6 +34,7 @@ vim.api.nvim_create_user_command("MarksGlobalDelete",
     })
 
 -- CWD MARKS
+
 local marks_cwd_delete_completion = function(_, _, _)
     local working_dir = vim.fn.getcwd()
     local marks = cwd_marks.get_marks()[working_dir]
@@ -53,14 +56,17 @@ local marks_cwd_delete_completion = function(_, _, _)
 end
 
 
-vim.api.nvim_create_user_command("MarksCwd", function()
-        cwd_marks.show_cwd_marks()
-    end,
-    { desc = "Lists marked files for current dirrectory" })
-vim.api.nvim_create_user_command("MarksCwdAll", function()
-        cwd_marks.show_all_cwd_marks()
-    end,
-    { desc = "Lists all marked files with their current dirrectories" })
+vim.api.nvim_create_user_command("MarksCwd",
+    function(opts) cwd_marks.show_marks(opts) end, {
+        desc = "Lists marked files for current dirrectory",
+        complete = marks_cwd_delete_completion,
+        nargs = '*'
+    })
+
+vim.api.nvim_create_user_command("MarksCwdAll",
+    function() cwd_marks.show_all_cwd_marks() end, {
+        desc = "Lists all marked files with their current dirrectories" })
+
 vim.api.nvim_create_user_command("MarksCwdDelete",
     function(opts) cwd_marks.delete_cwd_mark(opts.args) end, {
         nargs = 1,
@@ -138,8 +144,8 @@ local function set_key_length(args)
 end
 
 
-vim.api.nvim_create_user_command("MarksLocal", function()
-        local_marks.show_local_marks()
+vim.api.nvim_create_user_command("MarksLocal", function(opts)
+        local_marks.show_marks(opts)
     end,
     { desc = "Lists buffer local marks" })
 

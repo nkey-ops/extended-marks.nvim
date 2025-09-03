@@ -5,7 +5,7 @@ local utils = require('extended-marks.utils')
     "buffer path i.e file path": {  -- TODO it's an object for some reason should be an array
         "mark_key with form [a-z]{1,key_length}  [ -- TODO it's an array for some reason should be an object
             number: id of the mark in the namespace,
-            number: line number (zero based, api-indexing),
+            number: row number (zero based, api-indexing),
             number: column number (zero based, api-indexing)
         ]
     }
@@ -182,28 +182,74 @@ function locaL.jump_to_local_mark(first_char)
     vim.api.nvim_win_set_cursor(0, position)
 end
 
-function locaL.show_local_marks()
+local function print_marks(marks)
+    assert(type(marks) == 'table', "marks should be of type 'table'")
+
+    local max_row_length = 0
+    local max_col_length = 0
+    for _, value in pairs(marks) do
+        if #(value.row .. "") > max_row_length then
+            max_row_length = #(value.row .. "")
+        end
+        if #(value.col .. "") > max_col_length then
+            max_col_length = #(value.col .. "")
+        end
+    end
+
+    local pattern = string.format(
+        "[%%-%ss] [row:%%-%ss] [col:%%-%ss] - \"%%s\"",
+        LocalOpts.key_length, max_row_length, max_col_length)
+    local str = ""
+
+    for key, value in pairs(marks) do
+        if str ~= "" then
+            str = str .. "\n"
+        end
+        str = str .. string.format(pattern, key, value.row, value.col, value.line)
+    end
+    print(str)
+end
+
+-- LOCAL FUNCTIONS
+--- displays a list of local marks
+function locaL.show_marks(opts)
     local local_buffer_name = vim.api.nvim_buf_get_name(0)
     local current_buffer_id = vim.api.nvim_get_current_buf()
     local marks = utils.get_json_decoded_data(
         LocalOpts.data_file, local_buffer_name)[local_buffer_name]
 
+    local fargs = opts.fargs
+
+    if #fargs == 1 then
+        local mark = marks[fargs[1]]
+        if not mark then
+            print(string.format("MarksGlobal: The mark '' was not found", fargs[1]))
+            return
+        end
+        marks = { [fargs[1]] = mark }
+    end
 
     table.sort(marks)
+    local marks_to_print = {}
     for mark_key, mark in pairs(marks) do
         local pair =
             vim.api.nvim_buf_get_extmark_by_id(
                 current_buffer_id, LocalOpts.namespace, mark[1], {})
 
-        assert(pair ~= nil and pair[1] ~= nil, string.format("Nil for [%s:%s]", mark_key, vim.inspect(mark)))
-
-        marks[mark_key] =
-            vim.api.nvim_buf_get_lines(
-                current_buffer_id, pair[1], pair[1] + 1, true)[1]
+        if pair ~= nil and pair[1] ~= nil then
+            marks_to_print[mark_key] = {
+                row = mark[2],
+                col = mark[3],
+                line = vim.api.nvim_buf_get_lines(
+                    current_buffer_id, pair[1], pair[1] + 1, true)[1]
+            }
+        elseif vim.g.extended_marks ~= nil
+            and vim.g.extended_marks.is_debug then
+            print(string.format("Nil for [%s:%s]", mark_key, vim.inspect(mark)))
+        end
     end
 
-    vim.api.nvim_echo({ { vim.inspect(marks) } },
-        false, { verbose = false })
+    print_marks(marks_to_print)
 end
 
 -- Shows raw raw data for performance reasons

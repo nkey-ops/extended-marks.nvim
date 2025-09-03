@@ -151,25 +151,68 @@ function cwd.jump_to_cwd_mark(first_char)
     vim.cmd("e " .. marked_file.path)
 end
 
+local function print_marks(marks)
+    local str = ""
+    for key, value in pairs(marks) do
+        if str ~= "" then
+            str = str .. "\n"
+        end
+        str = str .. string.format(
+            "[%-" .. CwdOpts.key_length .. "s - \"%s\"", key .. ']',
+            value.path)
+    end
+    print(str)
+end
+
 -- Cwd Functions
 --- displays a list of all cwd marks related to the current working directory (cwd)
-function cwd.show_cwd_marks()
+function cwd.show_marks(opts)
     local working_dir = vim.fn.getcwd()
     local marks = utils.get_json_decoded_data(
         CwdOpts.data_file, working_dir)[working_dir]
 
-    table.sort(marks)
-    vim.api.nvim_echo({ { vim.inspect(marks) } },
-        false, { verbose = false })
+    local fargs = opts.fargs
+
+    if #fargs == 0 then
+        table.sort(marks)
+        print_marks(marks)
+    elseif #fargs == 1 then
+        local mark = marks[fargs[1]]
+        if mark then
+            print_marks({ [fargs[1]] = mark })
+        else
+            print(string.format("MarksCwd: The mark '' was not found", fargs[1]))
+        end
+    else
+        print("MarksCwd: Cannot accept more than 1 argument")
+    end
 end
+
+local function print_all_marks(marks)
+    local str = ""
+
+    for dir, cwd_marks in pairs(marks) do
+        if str ~= "" then
+            str = str .. "\n\n"
+        end
+        str = str .. string.format("\"%s\"", dir)
+        for mark_key, mark in pairs(cwd_marks) do
+            str = str .. "\n"
+            str = str .. string.format(
+                "   [%-" .. CwdOpts.key_length .. "s - \"%s\"", mark_key .. ']',
+                mark.path)
+        end
+    end
+    print(str)
+end
+
 
 --- displays a list of all cwd marks and their related current working directories (cwd)
 function cwd.show_all_cwd_marks()
     local marks = utils.get_json_decoded_data(CwdOpts.data_file)
     table.sort(marks)
 
-    vim.api.nvim_echo({ { vim.inspect(marks) } },
-        false, { verbose = false })
+    print_all_marks(marks)
 end
 
 --- deletes the cwd mark withing the current working directory (cwd)

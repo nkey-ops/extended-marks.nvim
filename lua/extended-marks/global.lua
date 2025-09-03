@@ -167,17 +167,41 @@ function global.jump_to_mark(first_char)
     vim.cmd("e " .. path)
 end
 
+local function print_marks(marks)
+    local str = ""
+    for key, value in pairs(marks) do
+        if str ~= "" then
+            str = str .. "\n"
+        end
+        str = str .. string.format(
+            "[%-" .. GlobalOpts.key_length .. "s - \"%s\"", key .. ']',
+            value.path)
+    end
+    print(str)
+end
+
+
 -- Global Functions
 --- displays a list of all global marks
-function global.show_marks()
-    --- @type {[string]:GlobalMark}"
+function global.show_marks(opts)
+    --- @type {[string]:GlobalMark}
     local marks = utils.get_json_decoded_data(GlobalOpts.data_file)
 
-    assert(marks)
+    local fargs = opts.fargs
 
-    table.sort(marks)
-    vim.api.nvim_echo({ { vim.inspect(marks) } },
-        false, { verbose = false })
+    if #fargs == 0 then
+        table.sort(marks)
+        print_marks(marks)
+    elseif #fargs == 1 then
+        local mark = marks[fargs[1]]
+        if mark then
+            print_marks({ [fargs[1]] = mark })
+        else
+            print(string.format("MarksGlobal: The mark '' was not found", fargs[1]))
+        end
+    else
+        print("MarksGlobal: Cannot accept more than 1 argument")
+    end
 end
 
 --- deletes the global mark
